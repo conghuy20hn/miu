@@ -1,0 +1,68 @@
+{% if data | length > 0 %}
+    {% if ((data['cat_child'] > 0) and (data['child'] | length > 0)) or ((data['cat_child'] == 0)and(data['articles']|length > 0)) %}
+        <div class="mdl-content">
+            <h1 class="title">
+                <span class="title-over">
+                    <a href="{{ url('article/category-article', {'slug':data['slug']}) }}">{{ data['title'] }}</a>
+                    <i class="over"></i>
+                </span>
+                <a class="link-arrow" href="{{ url('article/category-article', {'slug':data['slug']}) }}">
+                    <i class="glyphicon icon-arrow_right"></i>
+                </a>
+            </h1>
+            {% set article_group = randomString(8) %}
+            {% set cat_group = randomString(8) %}
+            {% set article_item = [] %}
+            {% if data['cat_child'] > 0 %}
+                <div class="tab-link sub-cat-cut-text outer-scroll-hoz">
+                    <div class="inner-scroll-hoz">
+                        <div class="width-modified" data-padding="30" data-margin-item="5">
+                            {% for key,cat in data['child'] %}
+                                {% set newItem = randomString(8) %}
+                                {% set catItem = randomString(8) %}
+                                {% set article_item = article_item|merge({(loop.index0):newItem}) %}
+                                <div class="{{ key==0?'active-2':'' }} scroll-hoz-item">
+                                    <a id="{{ catItem }}" style="white-space: nowrap"
+                                       href="javascript:showTab('{{ newItem }}','{{ article_group }}','{{ cat_group }}','{{ catItem }}')"
+                                       class="{{ cat_group }}">{{ cat['title'] }}</a>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% for key,cat in data['child'] %}
+                    <div id="{{ article_item[key] }}" class="content mdl-news {{ article_group }}"
+                         style="display: {{ key==0?'block':'none' }}">
+                        {% for article in cat['articles'] %}
+                            <div class="item">
+                                {%  if cat['display_image'] %}
+                                <a href="{{ url('article/article-detail', {'slug':article.slug}) }}"><img
+                                            src="{{ article['image_path'] }}" width="89"
+                                            alt=""/></a>
+                                {% endif %}
+                                <p><a class="multiline-ellipsis-3" style="max-height: 61px;"
+                                      href="{{ url('article/article-detail', {'slug':article.slug}) }}">{{ article['title'] }}</a>
+                                </p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="content mdl-news">
+                    {% for article in data['articles'] %}
+                        <div class="item">
+                            {% if data['display_image'] %}
+                                <a href="{{ url('article/article-detail', {'slug':article.slug}) }}"><img
+                                            src="{{ article['image_path'] }}" width="89"
+                                            alt=""/></a>
+                            {% endif %}
+                            <p><a class="multiline-ellipsis-3" style="max-height: 61px;"
+                                  href="{{ url('article/article-detail', {'slug':article.slug}) }}">{{ article['title'] }}</a>
+                            </p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endif %}

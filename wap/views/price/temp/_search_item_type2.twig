@@ -1,0 +1,22 @@
+{% if data | length > 0 %}
+    {% for key,price in data %}
+        <div class="item">
+            <div class="item_type2" style="position: relative">
+                <div>
+                    <a href="{{ url('price/price-detail',{'price_id':price['id']}) }}">
+                        <img width="90" height="90" alt="" src="{{ price['image_path'] }}">
+                    </a>
+                </div>
+                <div style="padding-left: 100px">
+                    <h3><a href="{{ url('price/price-detail',{'price_id':price['id']}) }}" class="multiline-ellipsis-3"
+                           style="font-size: 16px; max-height: 41px;">{{ price['name'] }}</a></h3>
+
+                    <p>{{ price['price']['title'] }} : <strong class="color-01">{{ price['price']['value'] }}</strong>
+                    </p>
+
+                    <p>{{ price['location']['title'] }}: {{ price['location']['value'] }}</p>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+{% endif %}

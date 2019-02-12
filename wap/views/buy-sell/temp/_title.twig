@@ -1,0 +1,53 @@
+{% if ctl_on_header.type=='radio_button' %}
+    <h3 class="sub-title sub-title-first" style="text-align: left;border-bottom: none;  padding-top: 0px; margin-top: 0px;">{{ title }}
+        {{ include('@app/views/buy-sell/temp/_radio_button.twig', {'item':ctl_on_header}) }}
+        <p style="font-weight: normal; font-size: 17px;padding: 20px 0 10px;font-style: italic">Các trường có dấu * là bắt buộc</p>
+
+    </h3>
+    <div class="clear"></div>
+{% else %}
+    <div class="row"></div>
+    <div class="col-03">
+        {#<div class="col-01 item">#}
+        <h3 class="sub-title" style="text-align: left;">{{ title }}</h3>
+
+        {#</div>#}
+        <div class="row">
+            {% if ctl_on_header %}
+                <div class="col-02 item">
+                    {% if ctl_on_header.type=="text_box" %}
+                        {{ include('@app/views/buy-sell/temp/_text_box.twig', {'data':ctl_on_header}) }}
+                    {% endif %}
+
+                    {% if ctl_on_header.type=='extend_item' %}
+                        {{ include('@app/views/buy-sell/temp/_extend_item.twig') }}
+                    {% endif %}
+
+                    {% if ctl_on_header.type=='date_range' %}
+                        {{ include('@app/views/buy-sell/temp/_date_range.twig', {'data':ctl_on_header}) }}
+                    {% endif %}
+
+                    {% if ctl_on_header.type=='combo_box' %}
+                        {{ include('@app/views/buy-sell/temp/_combo_box.twig', {'item':ctl_on_header}) }}
+                    {% endif %}
+
+                    {% if ctl_on_header.type=="text_area" %}
+                        {{ include('@app/views/buy-sell/temp/_text_area.twig', {'data':ctl_on_header}) }}
+                    {% endif %}
+
+                    {% if ctl_on_header.type=='date_picker' %}
+                        {{ include('@app/views/buy-sell/temp/_date_picker.twig', {'item':ctl_on_header}) }}
+                    {% endif %}
+
+                    {% if ctl_on_header.type=='radio_button' %}
+                        {{ include('@app/views/buy-sell/temp/_radio_button.twig', {'item':ctl_on_header}) }}
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="clear"></div>
+    </div>
+{% endif %}
+
+

@@ -1,0 +1,20 @@
+{{ register_asset_bundle('wap/assets/HomeAsset') }}
+<div class="page_home" style="position: relative;">
+    {% for item in mainTemplate %}
+        {% if item['type'] == 'banner' %}
+            {{ include('@app/views/article/home_banner.twig', {'data':item['data']}) }}
+        {% elseif item['type'] == 'news' %}
+            {{ include('@app/views/article/home_article.twig', {'data':item}) }}
+        {% elseif item['type'] == 'price_list' %}
+            {{ include('@app/views/price/home_price.twig', {'data':item['data'], 'control': item['control']}) }}
+        {% elseif item['type'] == 'weather' %}
+            {{ include('@app/views/weather/home_weather.twig', {'data':item['data'], 'form':formWeather}) }}
+        {% elseif item['type'] == 'video' %}
+            {{ include('@app/views/video/home_video.twig', {'data':item['data']}) }}
+        {% endif %}
+    {% endfor %}
+
+    <script type="text/javascript">
+        dataTypeTopMenu = homepage;
+    </script>
+</div>

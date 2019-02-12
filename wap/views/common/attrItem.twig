@@ -1,0 +1,19 @@
+{% if item.type=='combo_box' %}
+    {{ include('@app/views/common/temp/_combo_box.twig', {'item':item}) }}
+{% endif %}
+
+{% if item.type=="text_area" %}
+    {{ include('@app/views/buy-sell/temp/_text_area.twig', {'data':item}) }}
+{% endif %}
+
+{% if(item.type=='date_picker') %}
+    {{ include('@app/views/buy-sell/temp/_date_picker.twig', {'item':item}) }}
+{% endif %}
+
+{% if item.type=='text_box' %}
+    {{ include('@app/views/common/temp/_text_box.twig', {'data':item}) }}
+{% endif %}
+
+{% if item.type=='extend_item' %}
+    {{ include('@app/views/buy-sell/temp/_extend_item.twig', {'data':item}) }}
+{% endif %}

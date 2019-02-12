@@ -1,0 +1,39 @@
+{{ register_asset_bundle('wap/assets/PriceAsset') }}
+{% if(data.item) %}
+    <div class="mdl-content">
+        <h3><strong>{{ data.item.name }}</strong></h3>
+        <div class="content mdl-news">
+            <div class="item">
+                <a href="javascript:void(0);"><img width="90" height="90" src="{{data.item.image_path}}" alt=""></a>
+                <p><br>Giá: <strong class="color-01">{{data.item.price.value}}</strong></p>
+                <p><br>Tại: {{data.item.location.value}}</p>
+            </div>
+        </div>
+        <div class="clear"></div><br>
+        <div class="content mdl-detail">
+            <p>{{ data.item.feature }}</p>
+        </div>
+    </div>
+
+    {% if(data.price) %}
+        <div class="mdl-content">
+            <h1 class="title" style="color: black">Giá sản phẩm ở các vùng miền khác</h1>
+            <div class="content mdl-news">
+                {% for item in data.price %}
+                    <div class="item">
+                        <p><br>{{ item['price']['title'] }}: <strong
+                                class="color-01">{{ item['price']['value'] }}</strong></p>
+
+                        <p><br>{{ item['location']['title'] }} {{ item['location']['value'] }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+{% else %}
+    <p class="result_nodata">{{ "Không có dữ liệu" }}</p>
+{% endif %}
+<script type="text/javascript">
+    dataTypeTopMenu=price_list;
+</script>

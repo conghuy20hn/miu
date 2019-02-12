@@ -1,0 +1,36 @@
+{{ begin_page() }}
+<!DOCTYPE html>
+<html lang="{{ app.language }}">
+<head>
+    <meta charset="{{ app.charset }}">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta content="telephone=no" name="format-detection">
+    {{ html.csrfMetaTags() | raw }}
+    <title>{{ html.encode(this.title) }}</title>
+    {{ head() }}
+</head>
+<body>
+<script type="text/javascript">
+    var homepage = "home_page";
+    var buy_home = "buy_home";
+    var price_list = "price_list";
+    var news = "news";
+</script>
+{{ begin_body() }}
+<div id="page">
+    <!-- Header -->
+    {% include "@app/views/components/header.twig" %}
+    <!-- Menu -->
+    {% include "@app/views/components/main-menu.twig" %}
+
+    {% include "@app/views/components/box_search.twig" %}
+
+    {{ content | raw }}
+    <!-- Left Menu -->
+    {% include "@app/views/components/left_menu.twig" %}
+</div>
+{{ end_body() }}
+</body>
+</html>
+{{ end_page() }}

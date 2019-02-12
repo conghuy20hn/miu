@@ -1,0 +1,40 @@
+{{ use('yii/bootstrap/ActiveForm') }}
+{{ use('yii/helpers/Html') }}
+{{ use('yii/web/View') }}
+{{ use('yii/widgets/ActiveForm') }}
+
+<div class="popup-search" style="display: none;">
+
+    <div class="box-search">
+        <a id="closeBox" class="fright" href="#"><i class="glyphicon glyphicon-remove-circle"></i></a>
+        <a id="clearSuggess" onclick="resetSearchForm('frmSearch')" class="fleft" href="#"><i
+                    class="glyphicon glyphicon-refresh"></i></a>
+
+        <div class="box-search-content">
+            {#{% set form = active_form_begin({
+            'id': 'frmSearch',
+            'action' : '/search',
+            'options': {
+            'class': 'form-horizontal',
+            'data-pjax' : 'false',
+            'data-ajax' : 'false',
+            'method' : 'GET',
+            }}) %}#}
+            <form method="get" action="/search" id="frmSearch" class="form-horizontal">
+                <input type="text" class="ipt-search" placeholder="Nhập từ khóa..." name="keyword" id="keyword"
+                       autocomplete="off">
+            </form>
+            {#{{ active_form_end() }}#}
+        </div>
+    </div>
+
+    <div class="box-search-suggess">
+        <ul id="contentSuggess">
+            {#<li>
+                <i class="glyphicon icon-shrimp"></i>
+                <a class="txt-song" href="#">Nếu em được lựa chọn</a>
+            </li>#}
+        </ul>
+    </div>
+
+</div>

@@ -1,0 +1,135 @@
+{{ register_asset_bundle('wap/assets/ComposeAsset') }}
+{{ use('yii/bootstrap/ActiveForm') }}
+{{ use('yii/helpers/Html') }}
+{{ use('yii/web/View') }}
+{{ use('yii/widgets/ActiveForm') }}
+
+<div class="mdl-content">
+    {% set form = active_form_begin({
+    'id': 'buy-sell-compose',
+    'action' : '/buy-sell/compose-submit',
+    'options': {
+    'class': 'form-horizontal',
+    'enctype' : 'multipart/form-data',
+    'onsubmit':'return submitCompose()',
+    'accept-charset':'utf-8',
+    }}) %}
+    <div class="content mdl-filter">
+        {% for item in data.control %}
+            {% if item.title %}
+                {{ include('@app/views/buy-sell/temp/_title.twig', {'title':item.title, 'ctl_on_header': item.ctl_on_header}) }}
+            {% endif %}
+            {% if item.ctl_on_header %}
+            {% endif %}
+            {% if item.items %}
+                {% for control in item.items %}
+                    {% if control.type=="text_box" %}
+                        {{ include('@app/views/buy-sell/temp/_text_box.twig', {'data':control}) }}
+                    {% endif %}
+
+                    {% if(control.type=='multi') %}
+                        {{ include('@app/views/buy-sell/temp/_multi.twig', {'data':control['items'], 'isCompose':1}) }}
+                    {% endif %}
+
+                    {% if(control.type=='extend_item') %}
+                        {{ include('@app/views/buy-sell/temp/_extend_item.twig') }}
+                    {% endif %}
+
+                    {% if(control.type=='date_range') %}
+                        {{ include('@app/views/buy-sell/temp/_date_range.twig', {'data':control['items']}) }}
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        {% endfor %}
+        <div class="row" id="show_result">
+        </div>
+
+        {#<div class="row">
+            <div class="col-01 item">
+                <input type="button" class="btn-accept" value="ĐĂNG TIN" onclick="submitCompose()">
+            </div>
+            <div class="col-01 item">
+                <a href="{{ url('buy-sell/buy-home') }}">
+                    <input type="reset" class="btn-cancel" value="HỦY"></a>
+            </div>
+        </div>#}
+        <div class="row-form">
+            <input type="button" class="btn-accept" value="ĐĂNG TIN" onclick="submitCompose()">
+
+            <input type="reset" class="btn-cancel" value="HỦY" onclick="resetCompose()"/>
+
+            {#<a href="{{ url('buy-sell/buy-home') }}" class="btn-cancel">
+                HỦY
+            </a#}
+            <div class="clear"></div>
+        </div>
+    </div>
+    <!-- Modal -->
+    {#<button type="button" class="btn btn-default" style="color: #00bac1" id="myBtn">Thông báo</button>#}
+    <div class="modal fade" id="myModalCompose" role="dialog" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    {#<button type="button" class="close" data-dismiss="modal">&times;</button>#}
+                    <h4 style="color:#00bac1;"><span class="glyphicon"></span> Thông báo</h4>
+                </div>
+                <div class="modal-body" style="padding: 15px;">
+                    <p style="font-weight: bold;">Lưu thành công!</p>
+                    <strong class="result_compose"></strong>
+                </div>
+                <div class="modal-footer" style="padding: 10px 15px 15px 15px;">
+                    <div class="content mdl-filter">
+                        <div class="row-form">
+                            <div class="">
+                                <a href="{{ url('buy-sell/compose') }}">
+                                    <input type="button" id="buy_sell_reset" class="btn-accept" value="ĐĂNG TIN MỚI"
+                                           data-url="{{ url('buy-sell/compose') }}"></a>
+                            </div>
+                            <div class="">
+                                <input type="reset" class="btn-cancel" value="KẾT THÚC" onclick="resetCompose()"/>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{ active_form_end() }}
+</div>
+
+
+<script type="text/javascript">
+    dataTypeTopMenu = buy_home;
+</script>
+
+<style type="text/css">
+    .mdl-filter .col-03 {
+        padding: 5px 0 10px;
+    }
+
+    .mdl-filter .area {
+        width: 100%;
+    }
+
+    .p_error {
+        color: red;
+    }
+
+    .mdl-filter .row-form {
+        margin-bottom: 10px;
+    }
+
+    .mdl-filter .item, .table-weather .item {
+        padding: 0px 2% 10px;
+        text-align: center;
+        width: 50%;
+    }
+
+    .mdl-filter .txt {
+        height: 31px;
+    }
+</style>

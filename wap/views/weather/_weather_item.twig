@@ -1,0 +1,27 @@
+{% if weather.data %}
+    <div class="inner-scroll-hoz">
+        <div class="width-modified" data-padding="30" data-padding-item="5">
+            {% for data in weather.data %}
+                <div class="item scroll-hoz-item" style="height: 101px; width: 100px;">
+                    {% if data.url %}
+                        <i class="icon-link icon-triangle_2"></i>
+                    {% endif %}
+                    <p>{{ data.date }}</p>
+                    <a href="{{ data.url?data.url:'javascript:void(0)' }}" style="display: inline">
+                        {% if(data.image_path) %}
+                            <img src="{{ data.image_path }}"
+                                 style="width: 40px; height: 40px; display: inline;"/>
+                        {% else %}
+                            <p style="height: 40px"></p>
+                        {% endif %}
+                    </a>
+
+                    <p><span class="color-01">{{ data.temp_high }}</span>/<span>{{ data.temp_low }}</span>
+                    </p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% else %}
+    <p class="p_weather">Thông tin thời tiết đang được cập nhật</p>
+{% endif %}

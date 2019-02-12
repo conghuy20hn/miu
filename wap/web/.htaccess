@@ -1,0 +1,60 @@
+#Header set Access-Control-Allow-Credentials: true
+#Header set Access-Control-Allow-Origin: *
+Options +FollowSymLinks +ExecCGI
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # uncomment the following line, if you are having trouble
+  # getting no_script_name to work
+  RewriteBase /
+
+# we skip all files with .something
+#  RewriteCond %{REQUEST_URI} \..+$
+#  RewriteCond %{REQUEST_URI} !\.html$
+#  RewriteRule .* - [L]
+
+
+#  RewriteCond %{HTTPS} !on
+#  RewriteCond %{REQUEST_URI} ^/?(index.php/ajax/submitLoginUser)$ [NC]
+#  RewriteRule ^(.*)$ https://%{SERVER_NAME}/$1 [R,L]
+
+#  RewriteCond %{HTTPS} on
+#  RewriteCond %{REQUEST_URI} !^/?(login)$  [NC]
+#   RewriteCond %{REQUEST_URI} !^/?(ajax/submitLoginUser)$ [NC]
+#  RewriteCond %{REQUEST_URI} !^/?index\.php$
+#  RewriteRule ^(.*)$ http://%{SERVER_NAME}/$1 [R,L]
+
+#cach 2
+# # SSL here
+#  RewriteCond %{SERVER_PORT} !^443$
+#  RewriteRule ^/?(login|account|register|mypage)(.*) https://%{HTTP_HOST}/$1$2 [R,L]
+#
+#  # not anywhere else
+#  RewriteCond %{SERVER_PORT} !^80$
+#  RewriteCond %{REQUEST_URI} !^/?(login|account|register|mypage)(.*)
+#  RewriteCond %{REQUEST_URI} !^/?index\.php$
+#  RewriteRule .? http://%{HTTP_HOST}%{REQUEST_URI} [R,L]
+
+  # we check if the .html version is here (caching)
+  #RewriteRule ^$ index.html [QSA]
+  #RewriteRule ^([^.]+)$ $1.html [QSA]
+  RewriteCond %{REQUEST_FILENAME} !-f
+
+#  # no, so we redirect to our front web controller
+  RewriteRule ^(.*)$ index.php [QSA,L]
+
+
+</IfModule>
+
+AddType audio/mpeg mp3
+AddType audio/mp4 m4a
+AddType audio/ogg ogg
+AddType audio/ogg oga
+AddType audio/webm webma
+AddType audio/wav wav
+
+AddType video/mp4 mp4
+AddType video/mp4 m4v
+AddType video/ogg ogv
+AddType video/webm webm
+AddType video/webm webmv

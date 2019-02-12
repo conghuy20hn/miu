@@ -1,0 +1,50 @@
+{% if(data) %}
+
+        {% if data|length>1 %}
+            <div class="row">
+            {% for key,item in data %}
+                <div class="col-01 item">
+                    {% if item.type=='combo_box' %}
+                        {{ include('@app/views/buy-sell/temp/_combo_box.twig', {'item':item, 'isCompose':isCompose}) }}
+                    {% endif %}
+
+                    {% if item.type=="text_area" %}
+                        {{ include('@app/views/buy-sell/temp/_text_area.twig', {'data':item}) }}
+                    {% endif %}
+
+                    {% if(item.type=='date_picker') %}
+                        {{ include('@app/views/buy-sell/temp/_date_picker.twig', {'item':item}) }}
+                    {% endif %}
+
+                    {% if item.type=='text_box' %}
+                        {{ include('@app/views/buy-sell/temp/_text_box.twig', {'data':item}) }}
+                    {% endif %}
+
+                    {% if item.type=='extend_item' %}
+                        {{ include('@app/views/buy-sell/temp/_extend_item.twig', {'data':item}) }}
+                    {% endif %}
+
+                </div>
+            {% endfor %}
+            </div>
+        {% else %}
+            {% if data[0]['type']=='text_box' %}
+                {{ include('@app/views/buy-sell/temp/_text_box.twig', {'data':data[0]}) }}
+            {% endif %}
+            {% if data[0]['type']=='combo_box' %}
+                {{ include('@app/views/buy-sell/temp/_combo_box.twig', {'item':data[0]}) }}
+            {% endif %}
+
+            {% if data[0]['type']=="text_area" %}
+                {{ include('@app/views/buy-sell/temp/_text_area.twig', {'data':data[0]}) }}
+            {% endif %}
+
+            {% if(data[0]['type']=='date_picker') %}
+                {{ include('@app/views/buy-sell/temp/_date_picker.twig', {'item':data[0]}) }}
+            {% endif %}
+
+            {% if(data[0]['type']=='upload_image') %}
+                {{ include('@app/views/buy-sell/temp/_upload_image.twig', {'item':data[0]}) }}
+            {% endif %}
+        {% endif %}
+{% endif %}

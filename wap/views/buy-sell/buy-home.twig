@@ -1,0 +1,101 @@
+{{ register_asset_bundle('wap/assets/BuySellAsset') }}
+
+    {{ use('yii/bootstrap/ActiveForm') }}
+    {{ use('yii/helpers/Html') }}
+    {{ use('yii/web/View') }}
+    {{ use('yii/widgets/ActiveForm') }}
+<div class="page_buy_sell">
+
+    <div class="list-btn">
+        <a data-ajax="false" class="btn-create" href="{{ url('buy-sell/compose') }}"><span>+</span> ĐĂNG TIN</a>
+        <a class="btn-buy" href="javascript:void(0)">TIN MUA</a>
+        <a data-ajax="false" class="btn-sell" href="{{ url('buy-sell/sell-home') }}">TIN BÁN</a>
+
+    </div>
+    <div class="clear"></div>
+    <div class="mdl-content" style="overflow:visible;">
+        {% set form = active_form_begin({
+        'id': 'buy-sell',
+        'action' : '/buy-sell/buy',
+        'options': {
+        'class': 'form-horizontal',
+        'data-pjax' : 'false',
+        'autocomplete':'off'
+        }}) %}
+        <a class="btn-buy" href="javascript:void(0)"
+           onclick="searchBuyAndSell('ajaxLazyLoadSearchBuySell', true)">OK</a>
+
+        <div class="mdl-2 ajaxLazyLoadSearchBuySell" container="search_buy_sell_result"
+             data-url-ajax="{{ url('buy-sell/buy-search') }}"
+                {#data-callback-ajax2="cuttext_buysell_title"#}
+             data-callback-ajax1="trimTextBuySell">
+        </div>
+
+
+        <h1 class="title" style="width: 80%; border: 0;">Lọc tin theo</h1>
+
+        <div class="content mdl-filter">
+
+            {% for control in data['search-form'].control %}
+                {% if control.type=="text_box" %}
+                    {{ include('@app/views/buy-sell/temp/_text_box.twig', {'data':control}) }}
+                {% endif %}
+
+                {% if control.type=="text_area" %}
+                    {{ include('@app/views/buy-sell/temp/_text_area.twig', {'data':control}) }}
+                {% endif %}
+
+                {% if(control.type=='multi') %}
+                    {{ include('@app/views/buy-sell/temp/_multi.twig', {'data':control['items']}) }}
+                {% endif %}
+
+                {% if(control.type=='extend_item') %}
+                    {{ include('@app/views/buy-sell/temp/_extend_item.twig') }}
+                {% endif %}
+
+                {% if(control.type=='date_range') %}
+                    {{ include('@app/views/buy-sell/temp/_date_range.twig', {'data':control['items']}) }}
+                {% endif %}
+
+            {% endfor %}
+
+
+        </div>
+        <div class="clear"></div>
+
+        {{ active_form_end() }}
+    </div>
+
+
+    <div class="mdl-content">
+        <div class="content mdl-news">
+            <div class="search_buy_sell_result">
+                {% if items|length>0 %}
+                    {{ include('@app/views/buy-sell/temp/_search_item.twig', {'items':items, 'url':url}) }}
+                {% else %}
+                    <p class="">{{ "Không có dữ liệu" }}</p>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+
+    {% if (url) %}
+        <div class="loading">
+            <a href="javascript:void(0)" onclick="lazyLoadAjax3('ajaxLazyLoadSearchBuySellMore')">XEM THÊM</a><br><br>
+        </div>
+    {% endif %}
+
+    <script type="text/javascript">
+        dataTypeTopMenu = buy_home;
+    </script>
+
+    <style type="text/css">
+        .mdl-filter .item, .table-weather .item {
+            padding: 10px 2% 10px;
+        }
+        .mdl-filter .row-form {
+            margin-bottom: 0px;
+        }
+    </style>
+</div>

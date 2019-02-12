@@ -1,0 +1,32 @@
+{% if(videos|length)>0 %}
+    {% for key, video in videos %}
+        {% if key%2==0 %}
+            <div class="row">
+        {% endif %}
+        <div class="col-01 item">
+            <div class="overlay">
+                <img width="100%" class="img-responsive" src="{{ video.image_path }}">
+                <a class="btn-over" href="{{ url('video/video-detail', {'slug':video.slug}) }}"><i
+                            class="glyphicon"></i></a>
+            </div>
+            <a class="multiline-ellipsis-2" style="max-height: 36px;font-size: 16px"
+               href="{{ url('video/video-detail', {'slug':video.slug}) }}">{{ video.title }}</a>
+        </div>
+        {% if key%2 !=0 %}
+            </div>
+        {% endif %}
+    {% endfor %}
+    {% if url %}
+        <div class="mdl-2 ajaxLazyLoadSearchVideosMore search_videos_result" container="search_videos_result"
+             data-url-ajax="{{ url }}"
+             load-more-hide="view-more-videos"
+             data-callback-ajax1="trimTextArticleItem">
+        </div>
+    {% else %}
+        <style type="text/css">
+            .view-more-videos{
+                display: none;
+            }
+        </style>
+    {% endif %}
+{% endif %}

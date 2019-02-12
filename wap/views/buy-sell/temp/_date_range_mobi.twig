@@ -1,0 +1,15 @@
+{#<input type="{{ item.type }}" name="{{ item.name }}" class="datepicker txt" placeholder="{{ item.place_holder }}">#}
+{{ "a"|var_dump('1') }}
+{% if(data) %}
+    <div class="row">
+        {% for key, item in data %}
+            <div class="col-01 item">
+                {#<input class="min-date" type="text" />#}
+                {#<input class="max-date" type="text" />#}
+                <input type="{{ item.type }}" name="{{ item.name }}"
+                       class="txt {{ key%2==0?'min-date':'max-date' }}"
+                       placeholder="{{ item.place_holder }} {{ key }}" data-id="{{ item.name }}">
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}

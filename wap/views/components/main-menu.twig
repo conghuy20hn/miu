@@ -1,0 +1,18 @@
+{% set mainMenu=""|getTopMenu %}
+<div class="nav-menu outer-scroll-hoz" style="padding-left: 5px; padding-right: 5px;">
+    <div class="inner-scroll-hoz">
+        <div class="width-modified" data-padding="10" data-margin-item="10" style="text-transform: uppercase;">
+            {% for item in mainMenu %}
+                {% set type = item.type %}
+                {% if item.type|checkMenuCat %}
+                    {% set type = item.type ~ '_' ~ item.cat_id %}
+                {% endif %}
+                <div class="scroll-hoz-item">
+                    <a class="nav-item" data-ajax="false" data-type="{{ type }}"
+                       href="{{ url(item.url) }}">{{ item.title }}</a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<div class="clear"></div>

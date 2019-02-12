@@ -1,0 +1,42 @@
+{% set leftMenu=""|getLeftMenu %}
+
+<nav id="menu">
+    <ul>
+        {% for item in leftMenu %}
+            <li>
+            {% if(item.items|length>0) %}
+                <a data-ajax="false" data-type="{{ item.type }}" href="#mm-1"> <i
+                            class="glyphicon {{ item.type|iconLeftMenu }}"></i>{{ item.title }}</a>
+                <ul>
+                    {% for mm in item.items %}
+                        <li><a data-ajax="false" data-type="{{ mm.type }}" href="{{ url(mm.url) }}">{{ mm.title }}</a></li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <li><a data-ajax="false" data-type="{{ item.type }}" href="{{ url(item.url) }}"> <i
+                        class="glyphicon {{ item.type|iconLeftMenu }}"></i>{{ item.title }}</a>
+            {% endif %}
+            </li>
+        {% endfor %}
+        {#<li><a href="#mm-1"> <i class="glyphicon icon-buysell"></i> Mua &amp; Bán</a>
+            <ul>
+                <li><a href="{{ url('buy-sell/buy-home') }}">Tin mua</a></li>
+                <li><a href="{{ url('buy-sell/sell-home') }}">Tin bán</a></li>
+                <li><a href="#about/team">Đăng tin</a></li>
+            </ul>
+        </li>
+        <li><a href="{{ url('price/home') }}"> <i class="glyphicon icon-buysell"></i> Giá cả</a>
+        </li>
+        <li><a href="#"><i class="glyphicon icon-cloud"></i>Dự báo thời tiết</a></li>
+        <li><a href="#"><i class="glyphicon icon-warning"></i>Cảnh báo dịch bệnh</a></li>
+        <li><a href="#"><i class="glyphicon icon-news"></i>Tin tức</a></li>
+        <li><a href="#"><i class="glyphicon icon-fun"></i>Giải trí</a></li>#}
+        <div class="txt-footer" id="footer_left_menu">
+            © 2015 - Viettel telecom, thuộc <br>
+            Tập đoàn Viễn thông Quân đội Viettel
+        </div>
+    </ul>
+</nav>
+<script type="text/javascript">
+    var totalMenu = {{ leftMenu|length }};
+</script>

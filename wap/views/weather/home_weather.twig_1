@@ -1,0 +1,42 @@
+<div class="mdl-content">
+    <div class="row">
+        <div class="col-01 item">
+            <h1 class="title"> Thời tiết</h1>
+        </div>
+        <div class="col-01 item">
+            <select name="asdas">
+                <option value="a">asdas</option>
+                <option value="s">asdas</option>
+                <option value="d">asdas</option>
+                <option value="f">asdas</option>
+                <option value="g">asdas</option>
+            </select>
+        </div>
+    </div>
+    {#<h1 class="title"> <a href="#" class="btn-select">Cần thơ <i class="glyphicon icon-arrow_down"></i></a> Thời tiết</h1>#}
+    <div class="content">
+        <div class="mdl-weather">
+            <a href="#" class="btn-left"><i class="glyphicon icon-arrow_left"></i></a>
+            <a href="#" class="btn-right"><i class="glyphicon icon-arrow_right"></i></a>
+            <div class="row">
+                <div class="item">
+                    <p>Hom nay</p>
+                    <img src="data/weather_01.png" width="40"/>
+                    <p><span class="color-01">37</span>/<span>20</span></p>
+                </div>
+                <div class="item">
+                    <p>Hom nay</p>
+                    <img src="data/weather_02.png" width="40"/>
+                    <p><span class="color-01">37</span>/<span>20</span></p>
+                </div>
+                <div class="item">
+                    <p>Hom nay</p>
+                    <img src="data/weather_03.png" width="40"/>
+                    <p><span class="color-01">37</span>/<span>20</span></p>
+                </div>
+            </div>
+            <div class="clear"></div>
+
+        </div>
+    </div>
+</div>

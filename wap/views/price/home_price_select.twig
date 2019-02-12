@@ -1,0 +1,31 @@
+{% if data | length > 0 %}
+    {% set price_group = randomString(8) %}
+    {% set cat_group = randomString(8) %}
+    {% set price_item = [] %}
+    <div class="tab-link sub-cat-cut-text" style="margin-bottom: 10px">
+        <div class="inner-scroll-hoz">
+            <div class="width-modified" data-padding="30" data-margin-item="5">
+                {% for key,cat in data %}
+                    {% set newItem = randomString(8) %}
+                    {% set catItem = randomString(8) %}
+                    {% set price_item = price_item|merge({(loop.index0):newItem}) %}
+                    <div class="{{ key==0?'active-2':'' }} scroll-hoz-item">
+                        <a id="{{ catItem }}"
+                           href="javascript:showTab('{{ newItem }}','{{ price_group }}','{{ cat_group }}','{{ catItem }}')"
+                           class="{{ cat_group }}">{{ cat['name'] }}</a></div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% for key,cat in data %}
+        {% if cat['display_type'] == 1 %}
+            {% set display = 'mdl-price' %}
+        {% elseif cat['display_type'] == 2 %}
+            {% set display = 'mdl-news' %}
+        {% endif %}
+        <div id="{{ price_item[key] }}" class="content {{ display }} {{ price_group }}"
+             style="display: {{ key==0?'block':'none' }}">
+            {{ include('@app/views/price/display_type_'~cat['display_type']~'.twig', {'data':cat['items']}) }}
+        </div>
+    {% endfor %}
+{% endif %}

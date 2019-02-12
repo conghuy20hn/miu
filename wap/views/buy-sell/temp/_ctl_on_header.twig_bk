@@ -1,0 +1,15 @@
+<div class="row">
+    <div class="col-01 item">
+        <h1 class="title">{{ items.title }}</h1>
+    </div>
+    {#{{ items.ctl_on_header.option.data|var_dump('1') }}#}
+    <div class="col-01 item selectType" style="float: right">
+        {% if(items.ctl_on_header.type=='combo_box') %}
+            <select name="" class="selectpicker" style="display: none">
+                {% for key,item in items.ctl_on_header.option.data %}
+                    <option value="{{ key }}" }}>{{ item }}</option>
+                {% endfor %}
+            </select>
+        {% endif %}
+    </div>
+</div>

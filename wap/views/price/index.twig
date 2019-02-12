@@ -1,0 +1,94 @@
+{{ register_asset_bundle('wap/assets/PriceAsset') }}
+
+{{ use('yii/bootstrap/ActiveForm') }}
+{{ use('yii/helpers/Html') }}
+{{ use('yii/web/View') }}
+{{ use('yii/widgets/ActiveForm') }}
+
+<div class="page_buy_sell">
+{#<div class="page_price">#}
+
+    <div class="mdl-content" style="overflow:visible;z-index: 999999">
+        {% set form = active_form_begin({
+        'id': 'price-search',
+        'action' : '/price/search',
+        'options': {
+        'class': 'form-horizontal',
+        'data-pjax' : 'false',
+        'autocomplete':'off'
+        }}) %}
+        <a class="btn-buy" href="javascript:void(0)" onclick="searchPrice('ajaxLazyLoadSearchPrice', true)">OK</a>
+
+        <div class="mdl-2 ajaxLazyLoadSearchPrice" container="search_price_result"
+             data-url-ajax="{{ url('price/search') }}"
+             data-callback-ajax1="trimTextPricelist">
+        </div>
+
+        <h1 class="title" style="width: 80%">Giá theo địa điểm</h1>
+
+        <div class="content mdl-filter">
+
+            {% for control in data['search-form'].control %}
+                {% if control.type=="text_box" %}
+                    {{ include('@app/views/price/temp/_text_box.twig', {'data':control}) }}
+                {% endif %}
+
+                {% if(control.type=='multi') %}
+                    {{ include('@app/views/price/temp/_multi.twig', {'data':control['items']}) }}
+                {% endif %}
+
+                {% if(control.type=='extend_item') %}
+                    {{ include('@app/views/price/temp/_extend_item.twig') }}
+                {% endif %}
+
+                {% if(control.type=='date_range') %}
+                    {{ include('@app/views/price/temp/_date_range.twig', {'data':control['items']}) }}
+                {% endif %}
+
+            {% endfor %}
+
+
+        </div>
+        <div class="clear"></div>
+        {{ active_form_end() }}
+
+    </div>
+
+
+    <div class="mdl-content">
+
+        <div class="content mdl-news">
+            <div class="search_price_result">
+                {{ include('@app/views/price/temp/_search_item.twig', {'data':dataPricelist, 'url':url('price/load-search',{'page':2})}) }}
+            </div>
+        </div>
+    </div>
+
+    <div class="loading" {% if dataPricelist.items|length< limit %}style="display: none"{% endif %}><a
+                onclick="lazyLoadAjax3('ajaxLazyLoadSearchPriceMore')" href="javascript:void(0)">XEM THÊM</a></div>
+
+    <script type="text/javascript">
+        dataTypeTopMenu = price_list;
+        {% if(app.session.session_product_checked) %}
+        product_selected = {{ app.session.session_product_checked }};
+        {% else %}
+        product_selected = 0;
+        {% endif %}
+    </script>
+
+    <style type="text/css">
+        .mdl-price .item:last-child {
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 13px;
+        }
+
+        .mdl-news .item:last-child {
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 13px;
+        }
+        .mdl-content .btn-buy:hover, .mdl-content .btn-buy:active{
+            color: black;
+        }
+
+    </style>
+</div>

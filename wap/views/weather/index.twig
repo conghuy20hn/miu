@@ -1,0 +1,102 @@
+{{ register_asset_bundle('wap/assets/WeatherAsset') }}
+
+{{ use('yii/bootstrap/ActiveForm') }}
+{{ use('yii/helpers/Html') }}
+{{ use('yii/web/View') }}
+{{ use('yii/widgets/ActiveForm') }}
+
+{#<h1 class="title"><a href="#" class="btn-select">Cần thơ <i class="glyphicon icon-arrow_down"></i></a> Thời tiết</h1>#}
+<div class="weather_home">
+    <div class="mdl-content anti-hidden">
+        <div class="mdl_footer">
+            <div class="mdl_footer01">
+                <h1 class="title" style="padding: 0px"> Thời tiết</h1>
+            </div>
+            <div class="mdl_footer02">
+
+
+                {% set form = active_form_begin({
+                'id': 'weather',
+                'action' : '/weather',
+                'options': {
+                'class': 'form-horizontal',
+                'data-pjax' : 'false'
+                }}) %}
+                {#{{ articles|var_dump('1') }}#}
+                <input type="hidden" name="isHomeWeather" value="1">
+                {% if control[0].option.data|length>0 %}
+                    <select name="{{ control[0].name }}" class="selectpicker" style="display:none" autocomplete="off"
+                            onchange="fillDataWeather()">
+                        {% for item in control[0].option.data %}
+                            <option value="{{ item.key }}" {{ item.is_default==true?'selected="selected"':'' }}>{{ item.value }}</option>
+                        {% endfor %}
+                    </select>
+                {% endif %}
+                {{ active_form_end() }}
+            </div>
+            <div class="clear"></div>
+        </div>
+
+        <div class="content">
+            <div class="mdl-weather">
+                <div class="slider_weather_load">
+                    <div id="slider_weather" class="carousel-inner outer-scroll-hoz" style="display: block;">
+                        {% if(weather) %}
+                            <div class="inner-scroll-hoz">
+                                <div class="width-modified" data-padding="30" data-padding-item="5">
+                                    {% for item in weather %}
+                                        <div class="item scroll-hoz-item" style="height: 101px; width: 100px;">
+                                            {% if item.url %}
+                                                <i class="icon-link icon-triangle_2"></i>
+                                            {% endif %}
+                                            <p>{{ item.date }}</p>
+                                            <a href="{{ item.url?item.url:'javascript:void(0)' }}">
+                                                {% if(item.image_path) %}
+                                                    <img src="{{ item.image_path }}"
+                                                         style="width: 40px; height: 40px; display: inline;"/>
+                                                {% else %}
+                                                    <p style="height: 60px"></p>
+                                                {% endif %}
+                                            </a>
+
+                                            <p>
+                                                <span class="color-01">{{ item.temp_high }}</span>/<span>{{ item.temp_low }}</span>
+                                            </p>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% else %}
+                            <p class="p_weather">Thông tin thời tiết đang được cập nhật</p>
+                        {% endif %}
+
+                    </div>
+                </div>
+
+                <div class="clear"></div>
+            </div>
+        </div>
+    </div>
+    {% if(articles.item|length>0) %}
+        <div class="mdl-content">
+
+            <div class="mdl_footer">
+                <h1 class="title">Tin thời tiết khác</h1>
+
+                <div class="content mdl-news">
+                    {{ include('@wap/views/article/_related_items.twig', {'articles':articles.item, 'display_image':articles.display_image, 'url':articles.load_more}) }}
+                </div>
+                <div class="clear"></div>
+            </div>
+
+        </div>
+        {% if(articles.load_more) %}
+            <div class="loading">
+                <a href="javascript:void(0)" onclick="lazyLoadAjax2('ajaxLazyLoad2')">XEM THÊM</a><br><br>
+            </div>
+        {% endif %}
+    {% endif %}
+</div>
+<script type="text/javascript">
+    var url_weather_search = "{{ url('weather-home-search') }}";
+</script>

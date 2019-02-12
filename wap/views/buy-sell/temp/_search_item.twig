@@ -1,0 +1,88 @@
+{% if validator|length==0 %}
+    {% if items|length>0 %}
+        {% set dem=items|length-1 %}
+        {% for k,item in items %}
+            {% set item_id = randomString(8) %}
+
+            <div class="item" onclick="showBuySell('{{ item_id }}', {{ dem==k?1:2 }})">
+                <div class="show_item">
+                    <h4><a href="javascript:void(0);" class="">{{ item.title }}</a></h4>
+                    <a href="javascript:void(0);"><img width="89" height="89" alt="" src="{{ item.image_path }}"></a>
+                    {% if(item['price']['value']) %}
+                        <p><span class="color-02">{{ item['price']['title'] }}</span>: <span
+                                    class="color-01">{{ item['price']['value'] }}</span></p>
+                    {% endif %}
+                    {% if(item['category']['value']) %}
+                        <p>
+                            <span class="color-02">{{ item['category']['title'] }}</span>: {{ item['category']['value'] }}
+                        </p>
+                    {% endif %}
+                    {% if(item['attr_show']) %}
+                        {% for attr in item['attr_show'] %}
+                            {% if(attr['value']) %}
+                                <p><span class="color-02">{{ attr['title'] }}</span>: {{ attr['value'] }}</p>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+
+                    {% if(item['location']['value']) %}
+                        <p>
+                            <span class="color-02">{{ item['location']['title'] }}</span>: {{ item['location']['value'] }}
+                        </p>
+                    {% endif %}
+                    {% if(item['time']['value']) %}
+                        <p><span class="color-02">{{ item['time']['title'] }}</span>: {{ item['time']['value'] }}
+                        </p>
+                    {% endif %}
+                </div>
+                {% if(item['detail']) %}
+                    <div class="clear"></div>
+                    <div class="info_item " id="{{ item_id }}" style="display: none">
+                        {% if item['detail']['description'] %}
+                        <div style="padding: 5px 0px 5px;white-space: pre-line;margin-top: -25px">
+                            {{ item['detail']['description'] }}
+                        </div>
+                            {% endif %}
+                        {% if(item['detail']['attr_hide']) %}
+                            {% for attr in item['detail']['attr_hide'] %}
+                                {% if(attr['value']) %}
+                                    <p><span class="color-02">{{ attr['title'] }}</span>: {{ attr['value'] }}</p>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+
+
+                        {% if(item['detail']['mem_contact']['value']) %}
+                            <p><span class="color-02">{{ item['detail']['mem_contact']['title'] }}: <strong>{{ item['detail']['mem_contact']['value'] }}</strong></span></p>
+                        {% endif %}
+                        {% if(item['detail']['mem_address']['value']) %}
+                            <p><span class="color-02">{{ item['detail']['mem_address']['title'] }}</span>: {{ item['detail']['mem_address']['value'] }}</p>
+                        {% endif %}
+                        {% if(item['detail']['mem_phone']['value']) %}
+                            <p>
+                                <span class="color-02">{{ item['detail']['mem_phone']['title'] }}</span>:<strong> {{ item['detail']['mem_phone']['value'] }}</strong>
+                            </p>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+        {% if url %}
+            <div class="mdl-2 ajaxLazyLoadSearchBuySellMore search_buy_sell_result" container="search_buy_sell_result"
+                 data-url-ajax="{{ url }}"
+                    {#data-callback-ajax2="cuttext_buysell_title"#}
+                 data-callback-ajax1="trimTextBuySell">
+            </div>
+        {% endif %}
+
+    {% endif %}
+{% else %}
+    {% for valid in validator %}
+        <p>{{ valid['error-control'] }}: {{ valid['error-message'] }}</p>
+    {% endfor %}
+    <style type="text/css">
+        .loading {
+            display: none;
+        }
+    </style>
+{% endif %}

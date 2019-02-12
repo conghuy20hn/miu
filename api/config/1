@@ -1,0 +1,84 @@
+<?php
+
+use common\helpers\MenuHelper;
+
+return [
+    'home_page' => [
+        'main_template' => '[{"type":"banner"},{"type":"news","cat_id":"87","cat_childs":"0"},{"type":"price_list"}]',
+        '2nd_template' => '[{"type":"weather"},{"type":"video","cat_id":"43"},{"type":"news","cat_id":"86","cat_childs":"0"},{"type":"news","cat_id":"87","cat_childs":"0"},{"type":"news","cat_id":"82","cat_childs":"1"},{"type":"video","cat_id":"42"}]',
+        'num_of_hot_news' => 5,
+        'num_of_price_cat_list' => 3,
+        'num_of_price_item_list' => 3,
+        'num_of_child_cat_article' => 3,
+        'num_of_article_in_cat' => 5,
+        'num_of_weathers' => 5,
+        'num_of_videos' => 5,
+    ],
+    'article_page' => [
+        'num_of_news' => 5,
+        'num_of_news_per_page' => 20,
+        'num_of_related_article' => 5,
+        'num_of_related_article_more' => 3,
+    ],
+    'video_page' => [
+        'num_of_video' => 5,
+        'num_of_video_per_page' => 3,
+        'num_of_related_video' => 5,
+        'num_of_related_video_more' => 4,
+    ],
+    'top_menu' => [
+        [
+            'type' => MenuHelper::HOME,
+            'title' => 'Trang chủ'
+        ],
+        [
+            'type' => MenuHelper::CLASSIFIEDS,
+            'title' => 'Mua bán'
+        ],
+        [
+            'type' => MenuHelper::PRICE_LIST,
+            'title' => 'Giá cả'
+        ],
+        [
+            'type' => MenuHelper::NEWS,
+            'cat_id' => '37'
+        ],
+        [
+            'type' => MenuHelper::NEWS,
+            'cat_id' => '35'
+        ],
+        [
+            'type' => MenuHelper::NEWS,
+            'cat_id' => '18'
+        ],
+    ],
+    'product_categories_attr' => [
+        1 => "Hiển thị trang chủ"
+    ],
+    'product_categories_display_type' => [
+        1 => "Tôm",
+        2 => "Vật tư",
+    ],
+    'product_items_price_unit' => [
+        'đồng / tấn' => 'đồng / tấn',
+        'đồng / tạ' => 'đồng / tạ',
+        'đồng / yến' => 'đồng / yến',
+        'đồng / kg' => 'đồng / kg',
+        'đồng / g' => 'đồng / g',
+    ],
+    'product_items_attr' => [
+        1 => "Hiển thị trang chủ"
+    ],
+    'classifieds_page' => [
+        'num_of_item' => 2,
+        'num_of_item_more' => 2,
+    ],
+    'price_list_page' => [
+        'num_of_item' => 2,
+        'num_of_item_more' => 2,
+    ],
+    'article_home_weather' => [
+        'num_of_item' => 4,
+        'category_id' => 88,
+    ],
+];

@@ -1,0 +1,9 @@
+<div class="significant">
+    <div class="col-03">
+        <textarea name="{{ data.name }}" class="area" title="{{ data.title }}" placeholder="{{ data.place_holder }}"
+                  data-id="{{ data.name }} {{ data.option.required==true?'(*)':'' }}"></textarea>
+    </div>
+    {#{% if(data['option']['required']) %}#}
+        {#<span class="red">*</span>#}
+    {#{% endif %}#}
+</div>

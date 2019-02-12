@@ -1,0 +1,21 @@
+{% if data|length>0 %}
+    {% if(data.items|length>0) %}
+        {% if data.display_type==1 %}
+            <div class="mdl-price">
+                {{ include('@app/views/price/temp/_search_item_type1.twig', {'data':data.items}) }}
+            </div>
+        {% elseif data.display_type==2 %}
+
+            {{ include('@app/views/price/temp/_search_item_type2.twig', {'data':data.items}) }}
+
+        {% endif %}
+    {% else %}
+        <p>Không có dữ liệu</p>
+    {% endif %}
+    {% if url %}
+        <div class="mdl-2 ajaxLazyLoadSearchPriceMore search_price_result" container="search_price_result"
+             data-url-ajax="{{ url }}"
+             data-callback-ajax1="trimTextPricelist">
+        </div>
+    {% endif %}
+{% endif %}

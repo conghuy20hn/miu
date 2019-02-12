@@ -1,0 +1,9 @@
+<div class="row">
+    {% if(items.type=='combo_box') %}
+        <select name="{{ items.name }}" class="selectpicker" style="display: none">
+            {% for key,item in items.option.data %}
+                <option value="{{ key }}" }}>{{ item }}</option>
+            {% endfor %}
+        </select>
+    {% endif %}
+</div>

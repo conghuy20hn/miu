@@ -1,0 +1,23 @@
+<div class="box-select">
+    {% set fillData=false %}
+
+    {% if(item['option']['url']) %}
+        <div class="info_select_ajax_load" data-target="{{ item['option']['target'] }}"
+             send_name="{{ item['option']['send-name'] }}"
+             data-url="{{ item['option']['url'] }}" data-select="{{ item.name }}" data_name="{{ item.place_holder }}">
+        </div>
+        {% set fillData={'url':item['option']['url'], 'send_obj':item['option']['send-obj'], 'target':item['option']['target'], 'send_name':item['option']['send-name']} %}
+    {% endif %}
+
+    <select id="{{ item.name }}" class="selectpicker" style="display:none"
+            name="{{ item.name }}" {% if(fillData) %} onchange="fillData('{{ fillData|json_encode }}', this.value, '{{ item.place_holder }}', {{ ('extend' in item['option']['target'])?1:0 }})" {% endif %}>
+        {% for key,data in item['option']['data'] %}
+            <option value="{{ data.key|trim }}" {{ data.is_default==true? 'selected="selected"':'' }} >
+                {{ data.value|trim }}
+                {% if(item['option']['required']) %}
+                    {{ key==0?'(*)':'' }}
+                {% endif %}
+            </option>
+        {% endfor %}
+    </select>
+</div>

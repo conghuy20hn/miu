@@ -1,0 +1,31 @@
+{% if(articles|length>0) %}
+    {% for article in articles %}
+        <div class="item">
+            {% if display_image %}
+            <div class="overlay" style="width: 89px">
+                <a href="{{ url('article/article-detail', {'slug':article.slug}) }}">
+                    <img width="100%" class="img-responsive" src="{{ article.image_path }}">
+                </a>
+                <a class="btn-over" href="{{ url('article/article-detail', {'slug':article.slug}) }}"></a>
+            </div>
+            {% endif %}
+            <p>
+                <a class="multiline-ellipsis-3" style="max-height: 60px;"
+                   href="{{ url('article/article-detail', {'slug':article.slug}) }}">{{ article.title }}</a>
+            </p>
+        </div>
+    {% endfor %}
+    {% if url %}
+        <div class="mdl-2 ajaxLazyLoad2 articleDetailLoad" container="articleDetailLoad"
+             data-url-ajax="{{ url }}"
+                {#data-callback-ajax1="sliderVideo"#}
+             data-callback-ajax1="trimTextArticleItem">
+        </div>
+    {% else %}
+        <style type="text/css">
+            .loading {
+                display: none;
+            }
+        </style>
+    {% endif %}
+{% endif %}

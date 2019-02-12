@@ -1,0 +1,78 @@
+{#{{ formWeather|var_dump('huync2') }}#}
+<div class="mdl-content mdl_weather">
+
+    <div class="row">
+        <div class="col-01 item">
+            <h1 class="title">
+                Thời tiết
+            </h1>
+        </div>
+
+        <div class="col-01 item">
+            <div class="box-select">
+                {% if(formWeather) %}
+                    {% for frmweather in formWeather %}
+                        {% if frmweather.type=='multi' %}
+                            {% for fitem in frmweather.items %}
+                                {% if(fitem.type=='combo_box') %}
+                                    <select id="{{ fitem.name }}" class="selectpicker btn dropdown-toggle btn-default"
+                                            style="display:block;width: 200px" name="{{ fitem.name }}"
+                                            onchange="fillDataWeather()">
+                                        {% for key,data in fitem['option']['data'] %}
+                                            <option value="{{ data.key }}"
+                                                    {{ data.is_default?'selected="selected"':'' }}>{{ data.value }}</option>
+                                        {% endfor %}
+                                    </select>
+
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+
+
+    </div>
+    <div class="clear"></div>
+    <div class="content">
+        <div class="mdl-weather">
+            <a href="javascript:void(0)" class="btn-left"><i class="glyphicon icon-arrow_left"></i></a>
+            <a href="javascript:void(0)" class="btn-right"><i class="glyphicon icon-arrow_right"></i></a>
+
+            <div class="slider_weather_load">
+                <div id="slider_weather" class="carousel-inner owl-carousel owl-theme row">
+                    {% for weather in data %}
+                        <div class="item">
+                            <p>{{ weather.date }}</p>
+                            <a href="{{ weather.url }}"> <img src="{{ weather.image_path }}" width="40"/></a>
+
+                            <p><span class="color-01">{{ weather.temp_low }}</span>/<span>{{ weather.temp_high }}</span>
+                            </p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="clear"></div>
+
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var url_weather_search = "{{ url('weather-home-search') }}";
+</script>
+<style type="text/css">
+    .mdl-weather .item {
+        width: auto;
+    }
+
+    .mdl_weather .title, .mdl_weather .title a {
+        float: left;
+        line-height: 0;
+    }
+
+    .selectpicker {
+        float: right;
+    }
+</style>

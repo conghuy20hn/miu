@@ -1,0 +1,8 @@
+{% for key,data in item['option']['data'] %}
+    <span class="col-title-new">
+        <input type="radio" name="{{ item.name }}" id="{{ item.name }}_{{ key }}" {{ key!=1?'checked="checked"':'' }}
+               value="{{ key|trim }}">
+        {#{{ data }}#}
+        <label for = "{{ item.name }}_{{ key }}">{{ data }}</label>
+    </span>
+{% endfor %}

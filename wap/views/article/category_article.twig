@@ -1,0 +1,66 @@
+{{ register_asset_bundle('wap/assets/ArticleAsset') }}
+<div class="page_article">
+    {% if data.cat_child >0 %}
+        {% set cat_id=data.id %}
+        {% if data.child|length>0 %}
+            {% for childItem in data.child %}
+                <div class="mdl-content">
+                    <h1 class="title">
+                        {#<a class="link" href="{{ url('article/category-article',{'slug':childItem.slug}) }}"><i class="icon-arrow_right"></i></a>#}
+                        <span class="title-over">
+                        <a class="title"
+                           href="{{ url('article/category-article',{'slug':childItem.slug}) }}"> {{ childItem.title }}</a>
+                        <i class="over"></i>
+                        </span>
+                        <a class="link-arrow" href="{{ url('article/category-article',{'slug':childItem.slug}) }}">
+                            <i class="glyphicon icon-arrow_right"></i>
+                        </a>
+                    </h1>
+
+                    <div class="content mdl-news">
+                        {% for article in childItem.articles %}
+                            <div class="item">
+                                {% if(childItem.display_image==1) %}
+                                    <div class="overlay" style="width: 89px">
+                                        <img width="100%" class="img-responsive" src="{{ article.image_path }}">
+                                        <a class="btn-over"
+                                           href="{{ url('article/article-detail', {'slug':article.slug}) }}">
+                                            {#<i class="glyphicon icon-play"></i>#}
+                                        </a>
+                                    </div>
+                                {% endif %}
+                                <p>
+                                    <a class="multiline-ellipsis-3" style="max-height: 61px;"
+                                       href="{{ url('article/article-detail', {'slug':article.slug}) }}">{{ article.title }}</a>
+                                </p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="result_nodata">{{ "Không có dữ liệu" }}</p>
+        {% endif %}
+    {% else %}
+        <div class="mdl-content">
+            <h1 class="title">{{ data.title }}</h1>
+
+            <div class="content mdl-news">
+                {% if data.articles|length>0 %}
+                    {{ include('_related_items.twig', {'articles':data.articles, 'display_image':data.display_image ,'url':url('article/load-category-article',{'page':2, 'slug':data.slug})}) }}
+                {% else %}
+                    <p class="result_nodata">{{ "Không có dữ liệu" }}</p>
+                {% endif %}
+
+            </div>
+        </div>
+        {% if data.load_more %}
+            <div class="loading">
+                <a href="javascript:void(0)" onclick="lazyLoadAjax2('ajaxLazyLoad2')">XEM THÊM</a><br><br>
+            </div>
+        {% endif %}
+    {% endif %}
+    <script type="text/javascript">
+        dataTypeTopMenu = '{{ data.id|getAllParent }}';
+    </script>
+</div>

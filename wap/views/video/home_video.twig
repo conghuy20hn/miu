@@ -1,0 +1,34 @@
+{% if ((data | length > 0) and (data['videos']) and (data['videos'] | length > 0)) %}
+    <div class="mdl-content">
+        <div class="home_video">
+            <h1 class="title">
+                <span class="title-over">
+                    <a href="{{ url('video/load-in-category', {'slug':data['slug']}) }}"> {{ data['title'] }}</a>
+                    <i class="over"></i>
+                </span>
+                <a class="link-arrow" href="{{ url('video/load-in-category', {'slug':data['slug']}) }}">
+                    <i class="glyphicon icon-arrow_right"></i>
+                </a>
+            </h1>
+            <div class="content mdl-relax">
+                {% set count = data['videos'] | length %}
+                {% set count = count - 1 %}
+                {% for index,video in data['videos'] %}
+                    {{ index is even?'<div class="row">':'' }}
+                    <div class="col-01 item">
+                        <div class="overlay">
+                            <img src="{{ video['image_path'] }}" width="100%"
+                                 class="img-responsive"/>
+                            <a href="{{ url('video/video-detail', {'slug':video.slug}) }}" class="btn-over"><i
+                                        class="glyphicon"></i></a>
+                        </div>
+                        <a class="multiline-ellipsis-2" style="max-height: 37px;  text-align: justify;font-size: 16px"
+                           href="{{ url('video/video-detail', {'slug':video.slug}) }}">{{ video['title'] }}</a>
+                    </div>
+                    {{ (index is odd) or (index==count)?'</div>':'' }}
+                {% endfor %}
+                <div class="clear"></div>
+            </div>
+        </div>
+    </div>
+{% endif %}

@@ -1,0 +1,104 @@
+{{ use('yii/bootstrap/ActiveForm') }}
+    {{ use('yii/helpers/Html') }}
+    {{ use('yii/web/View') }}
+    {{ use('yii/widgets/ActiveForm') }}
+{% if(formWeather[0]['items'][0]['option']['data']|length>0) %}
+    <div class="mdl-content anti-hidden">
+        <div class="mdl_footer">
+            <div class="mdl_footer01">
+                <h1 class="title">
+                    <a href="{{ url('weather/index') }}">Thời tiết</a>
+                </h1>
+            </div>
+            <div class="mdl_footer02">
+
+                {% set form = active_form_begin({
+                'id': 'weather',
+                'action' : '/weather',
+                'options': {
+                'class': 'form-horizontal',
+                'data-pjax' : 'false'
+                }}) %}
+                <select id="{{ formWeather[0]['items'][0]['name'] }}" name="{{ formWeather[0]['items'][0]['name'] }}"
+                        class="selectpicker" style="display: none" onchange="fillDataWeather()" autocomplete="off">
+                    {% for item in formWeather[0]['items'][0]['option']['data'] %}
+                        <option value="{{ item.key }}" {{ item.is_default==true?'selected="selected"':'' }}>{{ item.value }}</option>
+                    {% endfor %}
+                </select>
+                {{ active_form_end() }}
+            </div>
+            <div class="clear"></div>
+        </div>
+
+        <div class="clear"></div>
+        <div class="content">
+            <div class="weather_home">
+                <div class="mdl-weather">
+                    <div class="slider_weather_load">
+                        <div id="slider_weather" class="carousel-inner outer-scroll-hoz" style="display: block;">
+
+                            {% if data %}
+                                <div class="inner-scroll-hoz">
+                                    <div class="width-modified" data-padding="30" data-padding-item="5">
+                                        {#{{ formWeather[0]['items'][0]['option']['data']|var_dump('1') }}#}
+                                        {% for weather in data %}
+                                            {#<a href="{{ weather.url?weather.url:'javascript:void(0)' }}"> #}
+                                            <div class="item scroll-hoz-item" style="height: 101px; width: 100px;">
+                                                {% if weather.url %}
+                                                    <i class="icon-link icon-triangle_2"></i>
+                                                {% endif %}
+                                                <p>{{ weather.date }}</p>
+                                                <a href="{{ weather.url?weather.url:'javascript:void(0)' }}">
+                                                    {% if(weather.image_path) %}
+                                                        <img src="{{ weather.image_path }}"
+                                                             style="width: 40px; height: 40px; display: inline;"/>
+                                                    {% else %}
+                                                        <p style="height: 60px"></p>
+                                                    {% endif %}
+                                                </a>
+
+                                                <p>
+                                                    <span class="color-01">{{ weather.temp_high }}</span>/<span>{{ weather.temp_low }}</span>
+                                                </p>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% else %}
+                                <p class="p_weather">Thông tin thời tiết đang được cập nhật</p>
+                            {% endif %}
+
+                        </div>
+                    </div>
+                    <div class="clear"></div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<script type="text/javascript">
+    var url_weather_search = "{{ url('weather-home-search') }}";
+</script>
+<style type="text/css">
+    .mdl-weather .item {
+        width: auto;
+    }
+
+    .mdl_footer01 {
+        float: left;
+    }
+
+    .mdl_footer02 {
+        float: right;
+    }
+
+    .bootstrap-select:not([class*="col-"]):not([class*="form-control"]):not(.input-group-btn) {
+        width: 120px;
+    }
+
+    #slider_weather .owl-stage {
+        margin-left: -87px;
+    }
+</style>

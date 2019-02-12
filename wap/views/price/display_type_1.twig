@@ -1,0 +1,21 @@
+{% if data | length > 0 %}
+    {% for key,price in data %}
+        <div class="item">
+            {% set class = '' %}
+            {% set icon = '' %}
+            {% if price['state'] == 1 %}
+                {% set class = 'btn-up' %}
+                {% set icon = 'glyphicon-arrow-up' %}
+            {% elseif price['state'] == 2 %}
+                {% set class = 'btn-down' %}
+                {% set icon = 'glyphicon-arrow-down' %}
+            {% elseif price['state'] == 3 %}
+                {% set class = 'btn-no-change' %}
+                {% set icon = 'glyphicon-minus' %}
+            {% endif %}
+            <span class="{{ class }}">{{ price['price']['value'] }} <i class="glyphicon {{ icon }}"></i></span>
+            <p class="txt-1 multiline-ellipsis-2" style="max-height: 37px;">{{ price['name'] }}</p>
+            <p class="txt-2"></p>
+        </div>
+    {% endfor %}
+{% endif %}

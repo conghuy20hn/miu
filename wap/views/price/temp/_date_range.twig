@@ -1,0 +1,17 @@
+{#<input type="{{ item.type }}" name="{{ item.name }}" class="datepicker txt" placeholder="{{ item.place_holder }}">#}
+
+{% if(data) %}
+    <div class="row">
+        {% for item in data %}
+            <div class="col-01 item">
+                <div class="significant">
+                    <input type="{{ item.type }}" name="{{ item.name }}" class="{{ item.name }} txt"
+                           placeholder="{{ item.place_holder }}">
+                    {#{% if(item['option']['required']) %}#}
+                        {#<span>*</span>#}
+                    {#{% endif %}#}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}

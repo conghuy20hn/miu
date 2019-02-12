@@ -1,0 +1,151 @@
+{{ register_asset_bundle('wap/assets/WeatherAsset') }}
+{#{{ register_asset_bundle('wap/assets/AppAsset') }}#}
+<div class="weather_detail">
+    <div class="mdl-content">
+        <h1 class="title">Dự báo thời tiết</h1>
+
+        <div class="table-weather">
+            {% if(data.tide.tide_info) %}
+                {% set tide_info=data.tide.tide_info %}
+                <div class="tide">
+                    <table width="100%" cellspacing="0" cellpadding="0" border="0">
+                        <tr>
+                            <td width="40%" align="left">
+                                <p class="tide_location">{{ data.tide.title }} {{ data.tide.location }}</p>
+                            </td>
+                            <td width="30%" class="tide_content">
+                                <p class="tide_title">{{ tide_info.tide_high.title }}</p>
+
+                                <p class="tide_value">{{ tide_info.tide_high.value }}</p>
+
+                                <p class="tide_time">{{ tide_info.tide_high.time }}</p>
+                            </td>
+                            <td width="30%" class="tide_content">
+                                <p class="tide_title">{{ tide_info.tide_low.title }}</p>
+
+                                <p class="tide_value" style="color: #00bac2">{{ tide_info.tide_low.value }}</p>
+
+                                <p class="tide_time">{{ tide_info.tide_low.time }}</p>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            {% endif %}
+            {% set tide_detail=data.tide.tide_detail %}
+            {#{{ data.tide.tide_detail|var_dump('1') }}#}
+
+            {% if(tide_detail|length > 0) %}
+                <div class="tide_detail" style="display: block">
+                    <p class="tide_detail_title">Thông tin thủy triều(Mực nước(giờ:cm))</p>
+                    <table width="100%" cellspacing="0" cellpadding="0" border="0">
+                        {% for i in 0..7 %}
+                            <tr {{ dem==0?'style="border-bottom: 1px solid #ccc;"':'' }}>
+                                <td width="33.33%" class="tide_detail_value">
+                                    {% set td1=tide_detail[i] %}
+                                    {% set td2=tide_detail[(i+8)] %}
+                                    {% set td3=tide_detail[i+2*8] %}
+                                    <span style="padding-right: 5px">{{ td1.time<10?'0':'' }}{{ td1.time }}</span>:
+                                    <span class="color-01"> {{ td1.value }}</span>
+                                </td>
+                                <td width="33.33%" class="tide_detail_value">
+                                    <span style="padding-right: 5px">{{ td2.time<10?'0':'' }}{{ td2.time }}</span>:
+                                    <span class="color-01"> {{ td2.value }}</span>
+                                </td>
+                                <td width="33.33%" class="tide_detail_value">
+                                    <span style="padding-right: 5px">{{ td3.time<10?'0':'' }}{{ td3.time }}</span>:
+                                    <span class="color-01"> {{ td3.value }}</span>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            {% endif %}
+
+            {% if data.items|length>0 %}
+                <div class="weather_info">
+                    <table width="100%" cellspacing="0" cellpadding="0" border="0">
+                        <tbody>
+                        <tr>
+                            <th colspan="2">{{ data.label.label0 }}</th>
+                            <th>{{ data.label.label2 }}</th>
+                            <th>{{ data.label.label3 }}</th>
+                        </tr>
+                        {% set last=data.items|length-1 %}
+                        {% if(data.items|length>0) %}
+                            {% for dem, item in data.items %}
+                                {% set catItem = randomString(8) %}
+                                {% set catItem1 = randomString(8) %}
+                                <tr onclick="showWeather('{{ catItem1 }}', {{ dem==last?1:2 }});" class="tr_weather_info">
+                                    <td width="15%"><span class="txt">{{ item.intro.time }}</span></td>
+                                    <td class="txt-center" width="30%">
+                                        {% if (item.intro.icon) %}
+                                            <img width="40" src="{{ item.intro.icon }}">
+                                        {% endif %}
+                                        <br><span class="txt"> {{ item.intro.description }}</span>
+                                        {#<p class="txt">Nắng to</p>#}
+                                    </td>
+                                    <td width="5%"><span class="txt color-01">{{ item.intro.temp }}</span></td>
+                                    <td><span class="txt">{{ item.intro.rain }} </span><a
+                                                onclick="rettyTextPage()"
+                                                class="btn-explore icon-size" href="javascript:void(0)" id="icon_{{ catItem1 }}"
+                                                style="font-size:25px;"
+                                                {#data-toggle="collapse" data-target="#{{ catItem }}"#}
+                                                >{{ dem==0?"–":'+' }}</a>
+                                        </td>
+                                    </tr>
+                                    {#detail#}
+                                    {% if item.detail %}
+                                        <tr id="{{ catItem1 }}" class="weather-content {{ dem==0?"select":'' }}">
+                                            <td colspan="4">
+                                                {% for key, detail in item.detail %}
+                                                    {% if(key%2==0) %}
+                                                        <div class="row">
+                                                        {% endif %}
+                                                        <div class="col-01 item">
+                                                            <strong>{{ detail.title }}:</strong> {{ detail.value }}
+                                                        </div>
+                                                        {#<div class="col-01 item">#}
+                                                        {#<strong>Mưa:</strong> 0 mm#}
+                                                        {#</div>#}
+                                                        {% if(key%2!=0) %}
+                                                        </div>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="result_nodata">{{ "Không có dữ liệu" }}</p>
+            {% endif %}
+        </div>
+    </div>
+    {% if data.items|length>0 %}
+        <div class="mdl-content">
+            <div class="mdl_footer">
+                <div class="mdl_footer01">
+                    {% if(data.url.url_prev.url) %}
+                        <a class="color-01"
+                           href="{{ data.url.url_prev.url?data.url.url_prev.url:'javascript:void(0)' }}"><i
+                                class="glyphicon icon-arrow_left fl-left"></i>{{ data.url.url_prev.title }} </a>
+                        {% endif %}
+                </div>
+                <div class="mdl_footer02">
+                    {% if data.url.url_next.url %}
+                        <a class="color-01"
+                           href="{{ data.url.url_next.url?data.url.url_next.url:'javascript:void(0)' }}">{{ data.url.url_next.title }}
+                            <i class="glyphicon icon-arrow_right"></i></a>
+                            {#<i class="glyphicon icon-arrow_right_2 fl-right"></i></a>#}
+                        {% endif %}
+                </div>
+                <div class="clear"></div>
+            </div>
+            {#<p class="color-01"><a class="color-01" href="#">Thứ sáu <i class="glyphicon icon-arrow_right_2 fl-right"></i></a>
+            </p>#}
+        </div>
+    {% endif %}
+</div>

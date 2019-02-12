@@ -1,0 +1,24 @@
+{{ register_asset_bundle('wap/assets/VideoAsset') }}
+<div class="page_video">
+    {% if(data) %}
+        <div class="mdl-content">
+            <h1 class="title">{{ data.title }}</h1>
+
+            <div class="content mdl-relax">
+                {% if(data.videos|length>0) %}
+                    {{ include('_video_items.twig', {'videos':data.videos, 'url':url('video/load-more-in-category', {'page':2, 'slug':data.slug})} ) }}
+                {% else %}
+                    <p class="result_nodata">{{ "Không có dữ liệu" }}</p>
+                {% endif %}
+                <div class="clear"></div>
+            </div>
+        </div>
+
+        <div class="loading" {% if(data.load_more is empty) %} style="display: none" {% endif %}>
+            <a href="javascript:void(0)" onclick="lazyLoadAjax2('ajaxLazyLoad2')">XEM THÊM</a><br><br>
+        </div>
+
+    {% else %}
+        <p class="result_nodata">{{ "Không có dữ liệu" }}</p>
+    {% endif %}
+</div>

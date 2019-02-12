@@ -1,0 +1,59 @@
+{{ register_asset_bundle('wap/assets/ArticleAsset') }}
+
+{#{% for item in file_attached %}
+    <p>
+        <a href="{{ item.item.file_path }}">{{ item.item.file_name }}</a>
+    </p>
+{% endfor %}#}
+
+{% if data %}
+
+<div class="page_article_detail">
+    <div class="mdl-content">
+        <h1 class="title"><a
+                    href="{{ url('article/category-article', {'slug':category.slug}) }}">{{ category.name }}
+            </a></h1>
+
+        <div class="content mdl-detail">
+            <p class="time">{{ data.published_time_org|formatTimeArticle }}</p>
+
+            <h3 class="title_article"><strong>{{ data.title }}</strong></h3>
+
+            <p><strong>{{ data.introtext }}</strong></p>
+            {% if(data.fulltext) %}
+                <div class="" style="font-size: 16px">
+                    {{ data.fulltext|raw }}
+                </div>
+            {% else %}
+                <p class="p_article">Nội dung bài viết đang được cập nhật</p>
+            {% endif %}
+            <p></p>
+            {% for attach in data.attachment %}
+                <p><a href="{{ attach.file_viewer }}" target="_blank">
+                        <i class="glyphicon glyphicon-paperclip" style="padding-right: 5px;"></i>
+                        {{ attach.file_name }}
+                    </a></p>
+            {% endfor %}
+        </div>
+    </div>
+    {% if (data.related_items.articles|length>0) %}
+        <div class="mdl-content">
+            <h1 class="title">Các bài viết khác</h1>
+
+            <div class="content mdl-news">
+                {{ include('_related_items.twig', {'articles':data.related_items.articles, 'display_image':data.related_items.display_image ,'url':url('article/load-related-detail',{'page':2, 'slug':data.slug})}) }}
+            </div>
+        </div>
+        {% if(data.related_items.load_more) %}
+            <div class="loading">
+                <a href="javascript:void(0)" onclick="lazyLoadAjax2('ajaxLazyLoad2')">XEM THÊM</a><br><br>
+            </div>
+        {% endif %}
+    {% endif %}
+    {% else %}
+        <p class="result_nodata">{{ "Không có dữ liệu" }}</p>
+    {% endif %}
+    <script type="text/javascript">
+        dataTypeTopMenu = '{{ category.id|getAllParent }}';
+    </script>
+</div>

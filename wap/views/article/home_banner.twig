@@ -1,0 +1,40 @@
+{% if data|length > 0 %}
+    <div class="banner">
+        <div id="mainBanner" class="carousel-inner owl-carousel owl-theme">
+            {% for key,item in data %}
+                <div>
+                    <a href="{{ url('article/article-detail', {'slug':item.slug}) }}"><img
+                                src="{{ item['image_path'] }}" class="img-responsive" width="100%"
+                                alt=""/></a>
+                    <a href="{{ url('article/article-detail', {'slug':item.slug}) }}">
+                        <div class="overlay"></div>
+                    </a>
+
+                    <div class="content">
+                        <span class="red-point banner-cut-text">{{ item['category_name'] }}</span>
+
+                        <h3><a href="{{ url('article/article-detail', {'slug':item.slug}) }}"
+                               class="multiline-ellipsis-2"
+                               style="line-height: 22px; max-height: 49px;">{{ item['title'] }}</a></h3>
+
+                        <p class="banner-cut-text">{{ item['introtext'] | removeHtml }}</p>
+                        {% if item['published_time'] %}
+                            <p class="time"><span
+                                        class="glyphicon glyphicon-time"></span>&nbsp;{{ item['published_time'] }}
+                            </p>
+                        {% else %}
+                            <p class="time">
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}
+
+{#<div class="pagging">#}
+    {#<a href="#" class="active"></a>#}
+    {#<a href="#"></a>#}
+    {#<a href="#"></a>#}
+{#</div>#}

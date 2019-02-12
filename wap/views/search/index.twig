@@ -1,0 +1,89 @@
+{{ register_asset_bundle('wap/assets/SearchAsset') }}
+{{ use('yii/bootstrap/ActiveForm') }}
+{{ use('yii/helpers/Html') }}
+{{ use('yii/web/View') }}
+{{ use('yii/widgets/ActiveForm') }}
+
+<div class="mdl-content">
+    <div class="content">
+        <div class="search-result">
+            <!--div class="box">
+            {% set form = active_form_begin({
+            'id': 'frmSearch',
+            'action' : '/search',
+            'options': {
+            'class': 'form-horizontal',
+            'data-pjax' : 'false',
+            'method' : 'GET',
+            }}) %}
+
+            {#<form method="post" action="?" name="frmSeach">#}
+
+            <input placeholder="Nhập từ khóa tìm kiếm" name="keyword" class="txt-4">
+            <button type="submit"><i class="glyphicon icon-search"></i></button>
+            {#</form>#}
+            {{ active_form_end() }}
+    </div-->
+            {% if message %}
+                <h3><strong>{{ message }}</strong></h3>
+            {% else %}
+                <h3>Có <strong>{{ data.total }}</strong> kết quả với từ khóa <span>{{ keyword }}</span></h3>
+            {% endif %}
+        </div>
+        {% set article_group = randomString(8) %}
+        {% set cat_group = randomString(8) %}
+        {% set article_item = [] %}
+        {% if(data.result|length>0) %}
+            <div class="mdl-news">
+            <ul class="tab-link">
+                {% for key,res in data.result %}
+                    {% set newItem = randomString(8) %}
+                    {% set catItem = randomString(8) %}
+                    {% set article_item = article_item|merge({(loop.index0):newItem}) %}
+
+                    <li class="{{ key==0?'active-2':'' }}">
+                        <a id="{{ catItem }}"
+                           href="javascript:showTab('{{ newItem }}','{{ article_group }}','{{ cat_group }}','{{ catItem }}')"
+                           class="{{ cat_group }} {{ key==0?'active':'' }}">{{ res.title }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+            </div>
+            <div class="search_result_s">
+                {% for key,res in data.result %}
+                    <div id="{{ article_item[key] }}" class="content {{ article_group }}"
+                         style="display: {{ key==0?'block':'none' }}">
+                        {% if(res.type=='news') %}
+                            <div class="search_articles_result mdl-news">
+                                {{ include('_articles.twig', {'articles': res.items.articles, 'url':url('search/load-articles',{'page':2})}) }}
+                            </div>
+                            {% if (loadmore_article == 1) %}
+                                <div class="clear"></div>
+                                <div class="view-more-article">
+                                    <a onclick="lazyLoadAjax2('ajaxLazyLoadSearchArticlesMore')"
+                                       href="javascript:void(0)">XEM THÊM</a>
+                                </div>
+                            {% endif %}
+                        {% endif %}
+
+                        {% if(res.type=='video') %}
+                            <div class="search_videos_result">
+                                <div class="mdl-relax">
+                                    {{ include('_videos.twig', {'videos': res.items.videos, 'url':url('search/load-videos',{'page':2})}) }}
+                                </div>
+                            </div>
+                            {% if (loadmore_video == 1) %}
+                                <div class="clear"></div>
+                                <div class="view-more-videos">
+                                    <a onclick="lazyLoadAjax2('ajaxLazyLoadSearchVideosMore')"
+                                       href="javascript:void(0)">XEM THÊM</a>
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+
+        {% endif %}
+    </div>
+</div>

@@ -1,0 +1,72 @@
+{{ use('yii/bootstrap/ActiveForm') }}
+{{ use('yii/helpers/Html') }}
+{{ use('yii/web/View') }}
+{{ use('yii/widgets/ActiveForm') }}
+
+
+<div class="mdl-content anti-hidden" style="overflow: initial;">
+
+    <div class="mdl_footer">
+        <div class="mdl_footer01">
+            <h1 class="title">
+                <a href="{{ url('price/home') }}">Giá tôm</a>
+            </h1>
+        </div>
+        <div class="mdl_footer02">
+
+            {% set form = active_form_begin({
+            'id': 'price-select',
+            'action' : '/price-select',
+            'options': {
+            'class': 'form-horizontal',
+            'data-pjax' : 'false'
+            }}) %}
+            <select id="ddlHomePrice" name="{{ control['items'][0]['name'] }}" autocomplete="off"
+                    class="selectpicker" style="display: none" onchange="ajaxDataPrice()">
+                {% for item in control['items'][0]['option']['data'] %}
+                    <option value="{{ item.key }}" {{ item.is_default==true?'selected="selected"':'' }}>{{ item.value }}</option>
+                {% endfor %}
+            </select>
+            {{ active_form_end() }}
+        </div>
+        <div class="clear"></div>
+    </div>
+
+
+    <div id="divHomePrice">
+        {% if data | length > 0 %}
+            {% set price_group = randomString(8) %}
+            {% set cat_group = randomString(8) %}
+            {% set price_item = [] %}
+            <div class="tab-link sub-cat-cut-text outer-scroll-hoz" style="margin-bottom: 10px;">
+                <div class="inner-scroll-hoz">
+                    <div class="width-modified" data-padding="30" data-margin-item="5">
+                        {% for key,cat in data %}
+                            {% set newItem = randomString(8) %}
+                            {% set catItem = randomString(8) %}
+                            {% set price_item = price_item|merge({(loop.index0):newItem}) %}
+                            <div class="{{ key==0?'active-2':'' }} scroll-hoz-item">
+                                <a id="{{ catItem }}" style="white-space: nowrap"
+                                   href="javascript:showTab('{{ newItem }}','{{ price_group }}','{{ cat_group }}','{{ catItem }}')"
+                                   class="{{ cat_group }}">{{ cat['name'] }}</a></div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% for key,cat in data %}
+                {% if cat['display_type'] == 1 %}
+                    {% set display = 'mdl-price' %}
+                {% elseif cat['display_type'] == 2 %}
+                    {% set display = 'mdl-news' %}
+                {% endif %}
+                <div id="{{ price_item[key] }}" class="content {{ display }} {{ price_group }}"
+                     style="display: {{ key==0?'block':'none' }}">
+                    {{ include('@app/views/price/display_type_'~cat['display_type']~'.twig', {'data':cat['items']}) }}
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="p_weather" style="color: #888">Thông tin giá cả đang được cập nhật</p>
+        {% endif %}
+    </div>
+    <div class="clear"></div>
+</div>

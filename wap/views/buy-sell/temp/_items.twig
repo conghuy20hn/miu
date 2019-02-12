@@ -1,0 +1,5 @@
+{% for item in items %}
+    {% if(item.type=='multi') %}
+        {{ include('@app/views/buy-sell/temp/_multi.twig', {'data':item.items}) }}
+    {% endif %}
+{% endfor %}
