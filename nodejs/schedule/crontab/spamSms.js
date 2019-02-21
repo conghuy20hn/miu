@@ -15,14 +15,27 @@ exports.spamSMSAction = function(){
 exports.sendSMSAction = async function(){
 	// kiem tra ct dang ban
 	let sqlStatus = "select * from `dl_spam_sms` where status = ? order by `start_time` desc LIMIT 1;";
-	let checkStatus6 = await db.select(sqlStatus6, [6]);
-	if(checkCurentSend.errCode === 1){	// ko co CT dang ban
+	let checkStatus6 = await db.select(sqlStatus, [6]);
+	if(checkStatus6.errCode === 0 && checkStatus6.data.length === 0){	// ko co CT dang ban
 		// lay danh sach ct
-		let checkStatus5 = await db.select(sqlStatus6, [5]);
-		if(checkStatus5.errCode === 0){
-			// cap nhap trang thai dang spam staus = 6
+		let checkStatus5 = await db.select(sqlStatus, [5]);
+		if(checkStatus5.errCode === 0 && checkStatus5.data.length > 0){
+			//console.log('checkStatus5 1', checkStatus5.data[0].id);
+			let processId = checkStatus5.data[0].id;
+			 //cap nhap trang thai dang spam staus = 6
 			let sqlUpdate = "update dl_spam_sms set status = 2 where id=?;";
-
+			let updateStatus6 = await db.select(sqlUpdate, [processId]);
+			if(updateStatus6.errCode === 0){
+				// thuc hien ban spam sms
+				// lay tong so ban ghi
+				let sqlTotalSMS = "select count(*) as total from `dl_spam_sms_msisdn` where `spam_sms_id`=?;";
+				let totalSMS = await db.select(sqlTotalSMS, [processId]);
+				if(totalSMS.errCode === 0 && totalSMS.data.length > 0){
+                    let limit = 1000;
+                    let totalRecord = totalSMS.data[0].total;
+					let totalPage= totalRecord/limit;
+				}
+			}
 		}
 	}
 
