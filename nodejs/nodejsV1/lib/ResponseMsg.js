@@ -1,0 +1,4 @@
+let RESPONSEMSG = {}
+RESPONSEMSG.MSG_SUCCESS = 'Thành công';
+RESPONSEMSG.MSG_UNSUCCESS = 'Thất bại';
+module.exports = RESPONSEMSG;
