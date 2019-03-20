@@ -20,6 +20,9 @@ configStr.commentMinlength = 3;
 configStr.commentMaxlength = 1000;
 configStr.commentLimit = 10;
 configStr.feedbackLimit = 10;
+# huync2
+configStr.errAuth = "Bạn chưa đăng nhập.";
+
 let randomAvatarChannel = [
     { "bucket": "image1", "path": "banner_random/avatarfd01.jpg" },
     { "bucket": "image2", "path": "banner_random/avatarfd02.jpg" }

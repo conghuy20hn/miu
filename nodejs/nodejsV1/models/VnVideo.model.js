@@ -98,15 +98,49 @@ exports.getAllVideo = async function (ids) {
         });
     });
 }
-exports.getDetail = async function (id, type) {
-    return new Promise(function (resolve, reject) {
-
+// exports.getDetail = async function (id, type) {
+//     return new Promise(function (resolve, reject) {
+//
+//         let where = {
+//             id: id,
+//             type: type
+//         };
+//         let query = VnVideo.findOne({
+//             where: where,
+//         }).then(function (objVideo) {
+//             if (objVideo != null) {
+//                 resolve(objVideo.dataValues);
+//             } else {
+//                 resolve(null);
+//             }
+//
+//         }).catch(function (err) {
+//             console.log(err);
+//             resolve(null);
+//         });
+//     });
+//
+// }
+getDetail = function(id, type = "", isObject = false, includeDraft = false){
+    return new Promise(function(resolve, reject){
         let where = {
             id: id,
-            type: type
+            is_active: vnVideoEnum.ACTIVE,
+            is_no_copyright: 0
         };
+
+        if (includeDraft) {
+            where.status = [vnVideoEnum.STATUS_APPROVE, vnVideoEnum.STATUS_DRAFT, vnVideoEnum.STATUS_DELETE];
+        } else {
+            where.status = vnVideoEnum.STATUS_APPROVE;
+        }
+
+        if (type) {
+            where.type = type;
+        }
+
         let query = VnVideo.findOne({
-            where: where,
+            where: where
         }).then(function (objVideo) {
             if (objVideo != null) {
                 resolve(objVideo.dataValues);
@@ -118,9 +152,10 @@ exports.getDetail = async function (id, type) {
             console.log(err);
             resolve(null);
         });
-    });
+    })
 
 }
+module.exports.getDetail = getDetail;
 
 exports.getNewVideo = async function (filterType = '', limit = null, offset = null) {
 
@@ -530,7 +565,7 @@ updateLikeVsDisLikeCount = function(id, like, dislike){
 
 exports.updateLikeVsDisLikeCount = updateLikeVsDisLikeCount;
 
-getVideoRelatedQuery = function(distinctVideo, categoryId, userId, limit, offset = 0, videoTime = null, isFilm = false, video = [])
+getVideoRelatedQuery = async function(distinctVideo, categoryId, userId, limit, offset = 0, videoTime = null, isFilm = false, video = [])
     {
         return new Promise(async function(resolve, reject){
 
