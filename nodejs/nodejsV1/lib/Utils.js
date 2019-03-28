@@ -6,6 +6,8 @@ var dateFormat = require('dateformat');
 
 const params = require('../config/params');
 const obj = require('../lib/Obj');
+const uuid = require('../lib/helper/uuid');
+const locutus = require('../lib/helper/locutus');
 const self = params.configStr;
 
 exports.getCurrentTime = function (partten) {
@@ -20,29 +22,25 @@ exports.converDate = function (date, partten) {
 }
 
 exports.getMobileNumber = function (msisdn, type) {
-    spcStr = "/[^0-9]+/";
-    msisdn = this.str_replace(msisdn, spcStr, '');
-
-    if (msisdn.length < 3) {
+    if (this.isEmpty(msisdn) || msisdn.length < 9) {
         return msisdn;
     }
     if (this.isEmpty(type))
         type = self.MOBILE_SIMPLE;
+
     switch (type) {
         case self.MOBILEGLOBAL:
             if (msisdn.charAt(0) == '0')
                 return self.country + msisdn.substr(1, msisdn.length);
             else if (msisdn.substr(0, self.country.length) != self.country)
-                return self.country.msisdn;
+                return self.country + msisdn;
             else
                 return msisdn;
-            break;
         case self.MOBILESIMPLE:
             if (msisdn.charAt(0) != '0')
-                return '0'.msisdn.substr(elf.country.length, msisdn.length);
+                return '0' + msisdn.substr(self.country.length, msisdn.length);
             else
                 return msisdn;
-            break;
         default:
             return msisdn;
     }
@@ -108,347 +106,33 @@ exports.arrayColumn = function (array, columnName) {
     })
 }
 exports.htmlspecialchars = function (string, quoteStyle, charset, doubleEncode) {
-    //       discuss at: http://locutus.io/php/htmlspecialchars/
-    //      original by: Mirek Slugen
-    //      improved by: Kevin van Zonneveld (http://kvz.io)
-    //      bugfixed by: Nathan
-    //      bugfixed by: Arno
-    //      bugfixed by: Brett Zamir (http://brett-zamir.me)
-    //      bugfixed by: Brett Zamir (http://brett-zamir.me)
-    //       revised by: Kevin van Zonneveld (http://kvz.io)
-    //         input by: Ratheous
-    //         input by: Mailfaker (http://www.weedem.fr/)
-    //         input by: felix
-    // reimplemented by: Brett Zamir (http://brett-zamir.me)
-    //           note 1: charset argument not supported
-    //        example 1: htmlspecialchars("<a href='test'>Test</a>", 'ENT_QUOTES')
-    //        returns 1: '&lt;a href=&#039;test&#039;&gt;Test&lt;/a&gt;'
-    //        example 2: htmlspecialchars("ab\"c'd", ['ENT_NOQUOTES', 'ENT_QUOTES'])
-    //        returns 2: 'ab"c&#039;d'
-    //        example 3: htmlspecialchars('my "&entity;" is still here', null, null, false)
-    //        returns 3: 'my &quot;&entity;&quot; is still here'
-
-    var optTemp = 0
-    var i = 0
-    var noquotes = false
-    if (typeof quoteStyle === 'undefined' || quoteStyle === null) {
-        quoteStyle = 2
-    }
-    string = string || ''
-    string = string.toString()
-
-    if (doubleEncode !== false) {
-        // Put this first to avoid double-encoding
-        string = string.replace(/&/g, '&amp;')
-    }
-
-    string = string
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-
-    var OPTS = {
-        'ENT_NOQUOTES': 0,
-        'ENT_HTML_QUOTE_SINGLE': 1,
-        'ENT_HTML_QUOTE_DOUBLE': 2,
-        'ENT_COMPAT': 2,
-        'ENT_QUOTES': 3,
-        'ENT_IGNORE': 4
-    }
-    if (quoteStyle === 0) {
-        noquotes = true
-    }
-    if (typeof quoteStyle !== 'number') {
-        // Allow for a single string or an array of string flags
-        quoteStyle = [].concat(quoteStyle)
-        for (i = 0; i < quoteStyle.length; i++) {
-            // Resolve string input to bitwise e.g. 'ENT_IGNORE' becomes 4
-            if (OPTS[quoteStyle[i]] === 0) {
-                noquotes = true
-            } else if (OPTS[quoteStyle[i]]) {
-                optTemp = optTemp | OPTS[quoteStyle[i]]
-            }
-        }
-        quoteStyle = optTemp
-    }
-    if (quoteStyle & OPTS.ENT_HTML_QUOTE_SINGLE) {
-        string = string.replace(/'/g, '&#039;')
-    }
-    if (!noquotes) {
-        string = string.replace(/"/g, '&quot;')
-    }
-
-    return string
+    return locutus.htmlspecialchars(string, quoteStyle, charset, doubleEncode);
 }
 exports.array_values = function (input) { // eslint-disable-line camelcase
-    //  discuss at: http://locutus.io/php/array_values/
-    // original by: Kevin van Zonneveld (http://kvz.io)
-    // improved by: Brett Zamir (http://brett-zamir.me)
-    //   example 1: array_values( {firstname: 'Kevin', surname: 'van Zonneveld'} )
-    //   returns 1: [ 'Kevin', 'van Zonneveld' ]
-
-    var tmpArr = []
-    var key = ''
-
-    for (key in input) {
-        tmpArr[tmpArr.length] = input[key]
-    }
-
-    return tmpArr
+    return locutus.array_values(input);
 }
 exports.array_keys = function (input, searchValue, argStrict) { // eslint-disable-line camelcase
-    //  discuss at: http://locutus.io/php/array_keys/
-    // original by: Kevin van Zonneveld (http://kvz.io)
-    //    input by: Brett Zamir (http://brett-zamir.me)
-    //    input by: P
-    // bugfixed by: Kevin van Zonneveld (http://kvz.io)
-    // bugfixed by: Brett Zamir (http://brett-zamir.me)
-    // improved by: jd
-    // improved by: Brett Zamir (http://brett-zamir.me)
-    //   example 1: array_keys( {firstname: 'Kevin', surname: 'van Zonneveld'} )
-    //   returns 1: [ 'firstname', 'surname' ]
-
-    var search = typeof searchValue !== 'undefined'
-    var tmpArr = []
-    var strict = !!argStrict
-    var include = true
-    var key = ''
-
-    for (key in input) {
-        if (input.hasOwnProperty(key)) {
-            include = true
-            if (search) {
-                if (strict && input[key] !== searchValue) {
-                    include = false
-                } else if (input[key] !== searchValue) {
-                    include = false
-                }
-            }
-
-            if (include) {
-                tmpArr[tmpArr.length] = key
-            }
-        }
-    }
-
-    return tmpArr
+    return locutus.array_keys(input, searchValue, argStrict);
 }
 exports.str_replace = function (search, replace, subject, countObj) { // eslint-disable-line camelcase
-    //  discuss at: http://locutus.io/php/str_replace/
-    // original by: Kevin van Zonneveld (http://kvz.io)
-    // improved by: Gabriel Paderni
-    // improved by: Philip Peterson
-    // improved by: Simon Willison (http://simonwillison.net)
-    // improved by: Kevin van Zonneveld (http://kvz.io)
-    // improved by: Onno Marsman (https://twitter.com/onnomarsman)
-    // improved by: Brett Zamir (http://brett-zamir.me)
-    //  revised by: Jonas Raoni Soares Silva (http://www.jsfromhell.com)
-    // bugfixed by: Anton Ongson
-    // bugfixed by: Kevin van Zonneveld (http://kvz.io)
-    // bugfixed by: Oleg Eremeev
-    // bugfixed by: Glen Arason (http://CanadianDomainRegistry.ca)
-    // bugfixed by: Glen Arason (http://CanadianDomainRegistry.ca)
-    //    input by: Onno Marsman (https://twitter.com/onnomarsman)
-    //    input by: Brett Zamir (http://brett-zamir.me)
-    //    input by: Oleg Eremeev
-    //      note 1: The countObj parameter (optional) if used must be passed in as a
-    //      note 1: object. The count will then be written by reference into it's `value` property
-    //   example 1: str_replace(' ', '.', 'Kevin van Zonneveld')
-    //   returns 1: 'Kevin.van.Zonneveld'
-    //   example 2: str_replace(['{name}', 'l'], ['hello', 'm'], '{name}, lars')
-    //   returns 2: 'hemmo, mars'
-    //   example 3: str_replace(Array('S','F'),'x','ASDFASDF')
-    //   returns 3: 'AxDxAxDx'
-    //   example 4: var countObj = {}
-    //   example 4: str_replace(['A','D'], ['x','y'] , 'ASDFASDF' , countObj)
-    //   example 4: var $result = countObj.value
-    //   returns 4: 4
-
-    var i = 0
-    var j = 0
-    var temp = ''
-    var repl = ''
-    var sl = 0
-    var fl = 0
-    var f = [].concat(search)
-    var r = [].concat(replace)
-    var s = subject
-    var ra = Object.prototype.toString.call(r) === '[object Array]'
-    var sa = Object.prototype.toString.call(s) === '[object Array]'
-    s = [].concat(s)
-
-    var $global = (typeof window !== 'undefined' ? window : global)
-    $global.$locutus = $global.$locutus || {}
-    var $locutus = $global.$locutus
-    $locutus.php = $locutus.php || {}
-
-    if (typeof (search) === 'object' && typeof (replace) === 'string') {
-        temp = replace
-        replace = []
-        for (i = 0; i < search.length; i += 1) {
-            replace[i] = temp
-        }
-        temp = ''
-        r = [].concat(replace)
-        ra = Object.prototype.toString.call(r) === '[object Array]'
-    }
-
-    if (typeof countObj !== 'undefined') {
-        countObj.value = 0
-    }
-
-    for (i = 0, sl = s.length; i < sl; i++) {
-        if (s[i] === '') {
-            continue
-        }
-        for (j = 0, fl = f.length; j < fl; j++) {
-            temp = s[i] + ''
-            repl = ra ? (r[j] !== undefined ? r[j] : '') : r[0]
-            s[i] = (temp).split(f[j]).join(repl)
-            if (typeof countObj !== 'undefined') {
-                countObj.value += ((temp.split(f[j])).length - 1)
-            }
-        }
-    }
-    return sa ? s : s[0]
+    return locutus.str_replace(search, replace, subject, countObj);
 }
-exports.substr_replace = function (str, replace, start, length) { // eslint-disable-line camelcase
-    //  discuss at: http://locutus.io/php/substr_replace/
-    // original by: Brett Zamir (http://brett-zamir.me)
-    //   example 1: substr_replace('ABCDEFGH:/MNRPQR/', 'bob', 0)
-    //   returns 1: 'bob'
-    //   example 2: var $var = 'ABCDEFGH:/MNRPQR/'
-    //   example 2: substr_replace($var, 'bob', 0, $var.length)
-    //   returns 2: 'bob'
-    //   example 3: substr_replace('ABCDEFGH:/MNRPQR/', 'bob', 0, 0)
-    //   returns 3: 'bobABCDEFGH:/MNRPQR/'
-    //   example 4: substr_replace('ABCDEFGH:/MNRPQR/', 'bob', 10, -1)
-    //   returns 4: 'ABCDEFGH:/bob/'
-    //   example 5: substr_replace('ABCDEFGH:/MNRPQR/', 'bob', -7, -1)
-    //   returns 5: 'ABCDEFGH:/bob/'
-    //   example 6: substr_replace('ABCDEFGH:/MNRPQR/', '', 10, -1)
-    //   returns 6: 'ABCDEFGH://'
-
-    if (start < 0) {
-        // start position in str
-        start = start + str.length
-    }
-    length = length !== undefined ? length : str.length
-    if (length < 0) {
-        length = length + str.length - start
-    }
-
-    return [
-        str.slice(0, start),
-        replace.substr(0, length),
-        replace.slice(length),
-        str.slice(start + length)
-    ].join('')
+exports.substr_replace = function (str, replace, start, length) {
+    return locutus.substr_replace(str, replace, start, length);
 }
 exports.hideMsisdn = function (msisdn) {
+    msisdn = msisdn + "";
+    if (this.isEmpty(msisdn)) {
+        return msisdn;
+    }
     return this.substr_replace(this.getMobileNumber(msisdn, self.MOBILE_SIMPLE), "xxxxxx", -7, 6);
 }
 exports.wordwrap = function (str, intWidth, strBreak, cut) {
-    //  discuss at: http://locutus.io/php/wordwrap/
-    // original by: Jonas Raoni Soares Silva (http://www.jsfromhell.com)
-    // improved by: Nick Callen
-    // improved by: Kevin van Zonneveld (http://kvz.io)
-    // improved by: Sakimori
-    //  revised by: Jonas Raoni Soares Silva (http://www.jsfromhell.com)
-    // bugfixed by: Michael Grier
-    // bugfixed by: Feras ALHAEK
-    // improved by: Rafał Kukawski (http://kukawski.net)
-    //   example 1: wordwrap('Kevin van Zonneveld', 6, '|', true)
-    //   returns 1: 'Kevin|van|Zonnev|eld'
-    //   example 2: wordwrap('The quick brown fox jumped over the lazy dog.', 20, '<br />\n')
-    //   returns 2: 'The quick brown fox<br />\njumped over the lazy<br />\ndog.'
-    //   example 3: wordwrap('Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.')
-    //   returns 3: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod\ntempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim\nveniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea\ncommodo consequat.'
-
-    intWidth = arguments.length >= 2 ? +intWidth : 75
-    strBreak = arguments.length >= 3 ? '' + strBreak : '\n'
-    cut = arguments.length >= 4 ? !!cut : false
-
-    var i, j, line
-
-    str += ''
-
-    if (intWidth < 1) {
-        return str
-    }
-
-    var reLineBreaks = /\r\n|\n|\r/
-    var reBeginningUntilFirstWhitespace = /^\S*/
-    var reLastCharsWithOptionalTrailingWhitespace = /\S*(\s)?$/
-
-    var lines = str.split(reLineBreaks)
-    var l = lines.length
-    var match
-
-    // for each line of text
-    for (i = 0; i < l; lines[i++] += line) {
-        line = lines[i]
-        lines[i] = ''
-
-        while (line.length > intWidth) {
-            // get slice of length one char above limit
-            var slice = line.slice(0, intWidth + 1)
-
-            // remove leading whitespace from rest of line to parse
-            var ltrim = 0
-            // remove trailing whitespace from new line content
-            var rtrim = 0
-
-            match = slice.match(reLastCharsWithOptionalTrailingWhitespace)
-
-            // if the slice ends with whitespace
-            if (match[1]) {
-                // then perfect moment to cut the line
-                j = intWidth
-                ltrim = 1
-            } else {
-                // otherwise cut at previous whitespace
-                j = slice.length - match[0].length
-
-                if (j) {
-                    rtrim = 1
-                }
-
-                // but if there is no previous whitespace
-                // and cut is forced
-                // cut just at the defined limit
-                if (!j && cut && intWidth) {
-                    j = intWidth
-                }
-
-                // if cut wasn't forced
-                // cut at next possible whitespace after the limit
-                if (!j) {
-                    var charsUntilNextWhitespace = (line.slice(intWidth).match(reBeginningUntilFirstWhitespace) || [''])[0]
-
-                    j = slice.length + charsUntilNextWhitespace.length
-                }
-            }
-
-            lines[i] += line.slice(0, j - rtrim)
-            line = line.slice(j + ltrim)
-            lines[i] += line.length ? strBreak : ''
-        }
-    }
-
-    return lines.join('\n')
+    return locutus.wordwrap(str, intWidth, strBreak, cut);
 }
 exports.strpos = function (haystack, needle, offset) {
-    //  discuss at: http://locutus.io/php/strpos/
-    // original by: Kevin van Zonneveld (http://kvz.io)
-    // improved by: Onno Marsman (https://twitter.com/onnomarsman)
-    // improved by: Brett Zamir (http://brett-zamir.me)
-    // bugfixed by: Daniel Esteban
-    //   example 1: strpos('Kevin van Zonneveld', 'e', 5)
-    //   returns 1: 14
 
-    var i = (haystack + '')
-        .indexOf(needle, (offset || 0))
-    return i === -1 ? false : i
+    return locutus.strpos(haystack, needle, offset);
 }
 exports.number_format = function (number, decimals, decPoint, thousandsSep) { // eslint-disable-line camelcase
     //  discuss at: http://locutus.io/php/number_format/
@@ -621,41 +305,30 @@ exports.strrpos = function (haystack, needle, offset) {
     return i >= 0 ? i : false
 }
 exports.gmdate = function (format, timestamp) {
-    //  discuss at: http://locutus.io/php/gmdate/
-    // original by: Brett Zamir (http://brett-zamir.me)
-    //    input by: Alex
-    // bugfixed by: Brett Zamir (http://brett-zamir.me)
-    //   example 1: gmdate('H:m:s \\m \\i\\s \\m\\o\\n\\t\\h', 1062402400); // Return will depend on your timezone
-    //   returns 1: '07:09:40 m is month'
-
-    var date = require('../datetime/date')
-
-    var dt = typeof timestamp === 'undefined' ? new Date() // Not provided
-        : timestamp instanceof Date ? new Date(timestamp) // Javascript Date()
-            : new Date(timestamp * 1000) // UNIX timestamp (auto-convert to int)
-
-    timestamp = Date.parse(dt.toUTCString().slice(0, -4)) / 1000
-
-    return date(format, timestamp)
+    return locutus.gmdate(format, timestamp);
 }
+
 exports.durationToStr = function (duration) {
     if (!this.isEmpty(duration)) {
-        arrStr = this.gmdate("H:i:s", duration).split(":");
+        var seconds = parseInt(duration, 10); // don't forget the second param
+        var hours = Math.floor(seconds / 3600);
+        var minutes = Math.floor((seconds - (hours * 3600)) / 60);
+        seconds = seconds - (hours * 3600) - (minutes * 60);
 
-        if (arrStr[0] > 0) {
-            return intval(duration / 3600) + ":" + arrStr[1] + ":" + arrStr[2];
-        } else {
-            return arrStr[1] + ":" + arrStr[2];
-        }
+        if (hours < 10) { hours = "0" + hours; }
+        if (minutes < 10) { minutes = "0" + minutes; }
+        if (seconds < 10) { seconds = "0" + seconds; }
+        var time = hours + ':' + minutes + ':' + seconds;
+        return time;
     } else {
         return duration;
     }
 }
 exports.convertPlayTimes = function convertPlayTimes(count) {
     if (count < 1000)
-        return this.number_format($count, 0, ',', '.');
+        return this.number_format(count, 0, ',', '.');
     if (count < 1000000 && count >= 1000)
-        return intval(count / 1000) + "K";
+        return this.intval(count / 1000) + "K";
     if (count >= 1000000)
         return this.number_format(Math.floor(count / 1000000), 0, ',', '.') + "tr";
 }
@@ -1040,4 +713,161 @@ exports.currentCacheTime = function () {
         cacheMinute = '0' + cacheMinute;
     }
     return dateNow + cacheMinute + ":00";
+}
+exports.uasort = function (inputArr, sorter) {
+    //  discuss at: http://locutus.io/php/uasort/
+    // original by: Brett Zamir (http://brett-zamir.me)
+    // improved by: Brett Zamir (http://brett-zamir.me)
+    // improved by: Theriault (https://github.com/Theriault)
+    //      note 1: This function deviates from PHP in returning a copy of the array instead
+    //      note 1: of acting by reference and returning true; this was necessary because
+    //      note 1: IE does not allow deleting and re-adding of properties without caching
+    //      note 1: of property position; you can set the ini of "locutus.sortByReference" to true to
+    //      note 1: get the PHP behavior, but use this only if you are in an environment
+    //      note 1: such as Firefox extensions where for-in iteration order is fixed and true
+    //      note 1: property deletion is supported. Note that we intend to implement the PHP
+    //      note 1: behavior by default if IE ever does allow it; only gives shallow copy since
+    //      note 1: is by reference in PHP anyways
+    //   example 1: var $sorter = function (a, b) { if (a > b) {return 1;}if (a < b) {return -1;} return 0;}
+    //   example 1: var $fruits = {d: 'lemon', a: 'orange', b: 'banana', c: 'apple'}
+    //   example 1: uasort($fruits, $sorter)
+    //   example 1: var $result = $fruits
+    //   returns 1: {c: 'apple', b: 'banana', d: 'lemon', a: 'orange'}
+
+    var valArr = []
+    var k = ''
+    var i = 0
+    var sortByReference = false
+    var populateArr = {}
+
+    if (typeof sorter === 'string') {
+        sorter = this[sorter]
+    } else if (Object.prototype.toString.call(sorter) === '[object Array]') {
+        sorter = this[sorter[0]][sorter[1]]
+    }
+
+    var iniVal = (typeof require !== 'undefined' ? require('../info/ini_get')('locutus.sortByReference') : undefined) || 'on'
+    sortByReference = iniVal === 'on'
+    populateArr = sortByReference ? inputArr : populateArr
+
+    for (k in inputArr) {
+        // Get key and value arrays
+        if (inputArr.hasOwnProperty(k)) {
+            valArr.push([k, inputArr[k]])
+            if (sortByReference) {
+                delete inputArr[k]
+            }
+        }
+    }
+    valArr.sort(function (a, b) {
+        return sorter(a[1], b[1])
+    })
+
+    for (i = 0; i < valArr.length; i++) {
+        // Repopulate the old array
+        populateArr[valArr[i][0]] = valArr[i][1]
+    }
+
+    return sortByReference || populateArr
+}
+exports.time = function () {
+    return locutus.time();
+}
+exports.mt_rand = function (min, max) {
+    return locutus.mt_rand(min, max);
+}
+
+exports.validateRegex = function (data, regex) {
+    var Regex = new RegExp(regex);
+    if (Regex.test(data)) {
+        return true;
+    }
+    return false;
+}
+exports.parseBearer = function (data) {
+    if (this.isEmpty(data) || !this.validateRegex(data, self.configStr)) {
+        return null;
+    }
+    let matchesArray = data.split(" ");
+    return matchesArray;
+}
+exports.generateVerifyCode = function (minLength = 4, maxLength = 6, chars = "0123456789") {
+
+    let length = this.mt_rand(minLength, maxLength);
+    size = chars.length - 1;
+    let code = '';
+    for (let i = 0; i < length; ++i) {
+        code += chars[this.mt_rand(0, size)];
+    }
+    return code;
+}
+exports.isValidMsisdn = function (msisdn) {
+    return this.validateRegex(msisdn, self.msisdnRegex);
+}
+exports.generateGuid = function () {
+    return uuid.v4().toUpperCase();
+}
+exports.converTimeStampToDate = function (time, partten) {
+    return this.converDate(new Date(time * 1000), partten);
+}
+exports.version_compare = function (v1, v2, operator) {
+    return locutus.version_compare(v1, v2, operator);
+}
+exports.strtotime = function (str, now) {
+    return locutus.strtotime(str, now);
+}
+exports.intval = function (mixedVar, base) {
+    return locutus.intval(mixedVar, base);
+}
+exports.toTimestamp = function (strDate) {
+    var datum = Date.parse(strDate);
+    return datum / 1000;
+}
+
+exports.replaceArray = function (find, replace, replaceString) {
+    for (var i = 0; i < find.length; i++) {
+        replaceString = replaceString.replace(find[i], replace[i]);
+    }
+    return replaceString;
+};
+exports.uuid = function () {
+    return uuid.v4();
+};
+exports.unserialize = function (data) {
+    return locutus.unserialize(data);
+}
+exports.serializeArray = function (data) {
+    return locutus.serialize(data);
+}
+
+exports.explode = function (delimiter, string, limit) {
+    return locutus.explode(delimiter, string, limit);
+}
+exports.implode = function (glue, pieces) {
+    return locutus.implode(glue, pieces);
+}
+
+exports.mergeById = function (array1, array2, key, limit = null) {
+    let keyExists = [];
+    let result = [];
+    for (let index = 0; index < array1.length; index++) {
+        let element = array1[index];
+        result.push(element);
+        keyExists.push(element[key]);
+    }
+
+    for (let index = 0; index < array1.length; index++) {
+        let element = array1[index];
+        if (!this.in_array(element[key], keyExists)) {
+            result.push(element);
+            keyExists.push(element.key);
+        }
+
+    }
+
+    if (!this.isEmpty(limit)) {
+        return this.array_slice(result, 0, limit);
+    } else {
+        return result;
+    }
 }

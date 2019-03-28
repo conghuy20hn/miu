@@ -1,3 +1,6 @@
+/**
+ * dungld
+ */
 const db = require('../models');
 
 const vnGroupCategory = require('./models_mxhvd/vn_group_category');
@@ -44,42 +47,57 @@ getAllActiveCategory = async function (type = null) {
 }
 exports.getAllActiveCategory = getAllActiveCategory;
 
-getParents = async function (offset = null, limit = null, isHot = false) {
-    return new Promise(async function (resolve, reject) {
-        let where = {
-            is_active: ACTIVE,
-            parent_id: null
-        };
-        if (isHot) {
-            where.is_hot = 1
-        }
-        let oft = null;
-        if (offset != null) {
-            oft = offset;
-        }
-        let lim = null;
-        if (limit != null) {
-            lim = limit;
-        }
-        cate.findAll({
-            where: where,
-            offset: oft,
-            limit: lim
-        }).then(function (vnCate) {
-            resolve(vnCate);
-        }).catch(function (err) {
-            console.log(err);
-            resolve(null);
-        });
-    })
+exports.getParents = async function (offset = null, limit = null, isHot = false) {
+    let where = {
+        is_active: ACTIVE,
+        parent_id: null
+    };
+    if (isHot) {
+        where.is_hot = 1
+    }
+    let oft = null;
+    if (offset != null) {
+        oft = offset;
+    }
+    let lim = null;
+    if (limit != null) {
+        lim = limit;
+    }
+    let query = {
+        where: where,
+        offset: oft,
+        limit: lim
+    }
+    return query;
+    // return this.getFindAllQuery(query, "getParents");
 }
-exports.getParents = getParents;
-// getParents1 = async function (offset = null, limit = null, isHot = false) {
-//     sq.query('SELECT * FROM vn_config WHERE config_key = :status ',
-//         { replacements: { status: 'active' }, type: sq.QueryTypes.SELECT}
-//     ).then(function (config) {
-//         console.log("tesst: "+config)
-//     })
-
-// }
-// exports.getParents1 = getParents1;
+exports.getAllHotCategories = async function (limit = null, ignoreIds = []) {
+    let where = {
+        is_active: ACTIVE,
+        is_hot: 1,
+        id: {
+            $notIn: ignoreIds
+        }
+    };
+    let query = {
+        where: where,
+        limit: limit,
+        order: [
+            ['positions', 'DESC'],
+        ]
+    }
+    return this.getFindAllQuery(query, "getAllHotCategories");
+}
+exports.getFindAllQuery = function (query, func = "getFindAllQuery") {
+    query.raw = true;//  return raw
+    return new Promise(async function (resolve, reject) {
+        cate.findAll(query)
+            .then(function (vnCate) {
+                // console.log(vnCate);
+                resolve(vnCate);
+            }).catch(function (err) {
+                console.log(func, err);
+                resolve(null);
+            });
+    });
+}

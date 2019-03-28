@@ -34,23 +34,35 @@ module.exports = {
     MUSIC_RECOMMEND: 'music_recommend',
     MUSIC_HISTORY: 'music_history',
     MUSIC_FREE: 'music_free',
-
+    VIDEO_CUSTOMER_MOSTVIEW: 'video_customer_mostview',
+    VIDEO_CUSTOMER_NEWEST: 'video_customer_newest',
+    PROMOTION_WINNER: 'promotion_winner',
+    PLAYLIST_PUBLIC_OF_USER: 'playlist_public_',
+    CATEGORY_PARENT: 'category_parent',
+    CATEGORY_DETAIL: 'category_detail',
+    CATEGORY_CHILD: 'category_child',
+    CATEGORY_CHILD_VIDEO: 'category_video',
+    VIDEO_MOST_TRENDING_CATE: 'video_most_trending_of_cate',
+    VIDEO_MOST_VIEW_CATE: 'video_most_view_of_cate',
+    VIDEO_NEW_CATE: 'video_new_of_cate',
+    VIDEO_HOME_BOX: 'video_home_box',
+    VIDEO_NEWEST_CHANNEL: 'video_newest_channel_',
     PLAYLIST_SEARCH: 'playlist_search',
     USER_FOLLOW: 'user_follow',
     USER_FOLLOW_VIDEO: 'user_follow_video',
     USER_FOLLOW_MUSIC: 'user_follow_music',
-
+    VIDEO_OF_CATEGORY: 'video_of_category',
     FILM_HOT: 'film_hot',
     FILM_RECOMMEND: 'film_recommend',
     FILM_NEW: 'film_new',
     FILM_FREE: 'film_free',
     FILM_RELATE: 'film_relate',
-
+    LIST_HOT_CHANNEL: 'list_hot_channel',
     MEMBER: 'member',
     MEMBER_FOLLOW: 'member_follow',
     MEMBER_FOLLOW_VIEW: 'member_follow_',
-
-
+    MY_PLAYLIST: 'my_playlist',
+    HISTORY_SEARCH: 'history_search',
     VIDEO_USER_LIKE: 'video_user_like_',
 
     // config key redis
@@ -86,6 +98,15 @@ module.exports = {
 
     MUSIC_FILTER: 'MUSIC_FILTER',
     VOD_FILTER: 'VOD_FILTER',
+    video_folow_limit: 4,
+    app_page_limit: 4,
+    streaming_vodProfileId: 6,
+    VIEW_WAIT_REGISTER: 'VIEW_WAIT_REGISTER_[userId]',
+    NUM_VIEW_WAIT_REGISTER: 'NUM_VIEW_WAIT_REGISTER_[userId]',
+    CACHE_1DAY: 86400,
+    num_video_viewfree_waitregister: 3,
+    quota_free_n_day: 3,
+    VIDEO_RECOMMEND_RELATE: 3,
     getName(name) {
         var obj = {
             banner: 'Banner',
@@ -114,6 +135,8 @@ module.exports = {
             DAY: 'Ngày',
             WEEK: 'Tuần',
             MONTH: 'Tháng',
+            video_search: "Tim kiem",
+            NEWSFEED: "Có thể bạn thích"
 
         };
         if (obj.hasOwnProperty(name)) {

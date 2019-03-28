@@ -18,7 +18,8 @@ getActiveKeyword = async function (limit = 10) {
             order: [
                 ['position', 'DESC']
             ],
-            limit: limit
+            limit: limit,
+            raw: true
         }).then(function (hotkeys) {
             if (hotkeys != null) {
                 resolve(utils.arrayColumn(hotkeys, 'content'));

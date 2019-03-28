@@ -1,13 +1,13 @@
 /**
  * Created by conghuyvn8x on 3/6/2019.
  */
-const {VnVideo} = require('../models/vnVideo.model');
+const {VnVideo} = require('../models/VnVideo.model');
 const validator = require('validator');
-const {to, TE} = require('../services/util.service');
-const ResponseCode = require('../services/ResponseCode');
+// const {to, TE} = require('../services/util.service');
+const ResponseCode = require('../lib/ResponseCode');
 const VnConfig = require('../models/vnConfig.model');
 const vnVideoEnum = require('../services/lib/vnVideoEnum');
-const utilService = require('../services/util.service');
+// const utilService = require('../services/util.service');
 
 //const VnVideo = VnVideo.VnVideo;
 const VnUser = VnVideo.VnUser;

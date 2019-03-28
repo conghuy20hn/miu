@@ -141,3 +141,19 @@ exports.getThumbAnimationImg = function getThumbAnimationImg(bucket, path, size)
         return cdn.generateWebUrl(bucket, thumbName);
     }
 }
+exports.getUserIp = function (req) {
+    return (req.headers["X-Forwarded-For"] ||
+        req.headers["x-forwarded-for"] ||
+        '').split(',')[0] ||
+        req.client.remoteAddress;
+}
+exports.getMsisdn = function (req) {
+    // let ip = this.getUserIp();
+    return "84989826271";
+}
+exports.isIPInDetectPool = function(){
+    return false;
+}
+exports.getAgentIp = function(){
+    return false;
+}

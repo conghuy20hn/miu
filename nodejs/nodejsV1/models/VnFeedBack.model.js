@@ -20,12 +20,12 @@ exports.countFeedbackByUserThisDay = async function (userId, msisdn) {
                         [Op.between]: [startTime, endTime],
                     },
                     [Op.or]: [{ msisdn: msisdn, user_id: userId }]
-                }
+                },
+                 raw: true
             }
         ).then(function (feed) {
             if (!Utils.isEmpty(feed)) {
-                console.log(feed);
-                resolve(0);
+                resolve(feed);
             } else {
                 resolve(0);
             }

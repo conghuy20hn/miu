@@ -13,83 +13,91 @@ const IN_ACTIVE = 0;
 exports.VnPackage = obj;
 
 getListPackage = async function (distributionId = null) {
-    return new Promise(function (resolve, reject) {
-        let where = {
+
+    let where = {
+        is_active: ACTIVE,
+    };
+    if (distributionId != null) {
+        where = {
             is_active: ACTIVE,
-        };
-        if (distributionId != null) {
-            where = {
-                is_active: ACTIVE,
-                distribution_id: distributionId
-            }
+            distribution_id: distributionId
         }
-        let query = obj.findAll({
-            where: where,
-            order: [
-                ['group_type', 'ASC'],
-                ['priority', 'ASC'],
-            ]
-        }).then(function (packages) {
-            if (packages != null) {
-                resolve(packages);
-            } else {
-                resolve(null);
-            }
-        }).catch(function (err) {
-            console.log(err);
-            resolve(null);
-        });
-    });
+    }
+    let query = {
+        where: where,
+        order: [
+            ['group_type', 'ASC'],
+            ['priority', 'ASC'],
+        ]
+
+    }
+
+    return await this.getFindAllQuery(query, "getListPackage");
 }
 exports.getListPackage = getListPackage;
 
-getSuggestPackage = function(packageId = null){
-    return new Promise(function(resolve, reject){
-        let where = {
-            is_active: ACTIVE,
-            is_display_frontend: ACTIVE
-        }
-        if(packageId != null){
-            where.id=packageId;
-        }
+getSuggestPackage = function (packageId = null) {
 
-        obj.findOne({
-            where: where,
-            order: [
-                ['priority', 'ASC'],
-            ]
-        }).then(function(package){
-            //console.log(package.dataValues);
-            resolve(package);
-        }).catch(function(e){
-            console.log(e);
-            resolve(false);
-        })
-    })
+    let where = {
+        is_active: ACTIVE,
+        is_display_frontend: ACTIVE
+    }
+    if (packageId != null) {
+        where.id = packageId;
+    }
+    let query = {
+        where: where,
+        order: [
+            ['priority', 'ASC'],
+        ]
+    };
+    return this.getFindOneQuery(query, "getSuggestPackage");
+
 }
 
 exports.getSuggestPackage = getSuggestPackage;
 
-getDistributionPackage = function(distributionId){
-    return new Promise(function(resolve, reject){
-        let where = {
-            is_active: ACTIVE,
-            is_display_frontend: ACTIVE,
-            distribution_id: distributionId
-        }
-        obj.findOne({
-            where: where,
-            order: [
-                ['priority', 'ASC'],
-            ]
-        }).then(function(package){
-            //console.log(package.dataValues);
-            resolve(package);
-        }).catch(function(e){
-            console.log(e);
-            resolve(false);
-        })
-    })
+getDistributionPackage = function (distributionId) {
+    let where = {
+        is_active: ACTIVE,
+        is_display_frontend: ACTIVE,
+        distribution_id: distributionId
+    }
+    let query = {
+        where: where,
+        order: [
+            ['priority', 'ASC'],
+        ]
+    };
+    return this.getFindOneQuery(query, "getDistributionPackage");
+
 }
 
 exports.getDistributionPackage = getDistributionPackage;
+
+getFindOneQuery = function (query, func = "getFindOneQuery") {
+    return new Promise(function (resolve, reject) {
+        query.raw = true;
+        obj.findOne(query).then(function (package) {
+            //console.log(package.dataValues);
+            resolve(package);
+        }).catch(function (e) {
+            console.log(func, e);
+            resolve(null);
+        })
+    })
+}
+exports.getFindOneQuery = getFindOneQuery;
+getFindAllQuery = function (query, func = "getFindAllQuery") {
+    return new Promise(function (resolve, reject) {
+        query.raw = true;
+        obj.findAll(query).then(function (package) {
+            console.log(package);
+            resolve(package);
+        }).catch(function (e) {
+            console.log(func, e);
+            resolve(null);
+        })
+    })
+}
+exports.getFindAllQuery = getFindAllQuery;

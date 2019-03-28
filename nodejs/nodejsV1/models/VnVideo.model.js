@@ -1,6 +1,6 @@
 const db = require('.');
 const VnVideoBase = require('./models_mxhvd/vn_video');
-const utils = require('../lib/Utils');
+const Utils = require('../lib/Utils');
 const VnVideo = VnVideoBase(db.sequelize, db.DataTypes);
 const VnUserBase = require('../models/models_mxhvd/vn_user');
 const VnUser = VnUserBase(db.sequelize, db.DataTypes);
@@ -12,6 +12,7 @@ const vnVideoEnum = require('../services/lib/vnVideoEnum');
 const Obj = require('../lib/Obj');
 const VnConfigBase = require('../models/config.model');
 const params = require('../config/params');
+const config = params.configStr;
 const VnVideoRecommendBase = require('../models/VnVideoReCommend.model');
 
 VnUser.hasMany(VnVideo, { foreignKey: 'id', as: 'v' });
@@ -30,44 +31,33 @@ const MUSIC_FILTER = 'MUSIC_FILTER';
 exports.getVideoHomePage = async function (limit, isX4 = false) {
     var recommendIds = [];
     let x = isX4 ? 4 : 2;
-    return new Promise(function (resolve, reject) {
-        let where = {
-            id: {
-                [Op.notIn]: recommendIds,
-            },
-            type: vnVideoEnum.TYPE_VOD,
-            status: vnVideoEnum.STATUS_APPROVE,
-            is_active: vnVideoEnum.ACTIVE,
-            is_hot: 1,
-            is_no_copyright: 0,
-            published_time: {
-                [Op.lte]: new Date()
-            }
-        };
 
-        let query = VnVideo.findAll({
-            where: where,
-            order: [
-                ['published_time', 'DESC']
-            ],
-            limit: x * limit
-        }).then(function (videoHot) {
-            if (videoHot != null) {
-                let hotIds = utils.arrayColumn(videoHot, 'id');
-                let arrGet = utils.array_values(utils.array_unique(utils.array_values(hotIds)));
-                resolve(arrGet);
-            } else {
-                resolve(null);
-            }
-        }).catch(function (err) {
-            console.log(err);
-            resolve(null);
-        });
-    });
+    let where = {
+        id: {
+            [Op.notIn]: recommendIds,
+        },
+        type: vnVideoEnum.TYPE_VOD,
+        status: vnVideoEnum.STATUS_APPROVE,
+        is_active: vnVideoEnum.ACTIVE,
+        is_hot: 1,
+        is_no_copyright: 0,
+        published_time: {
+            [Op.lte]: new Date()
+        }
+    };
+
+    let query = {
+        where: where,
+        order: [
+            ['published_time', 'DESC']
+        ],
+        limit: x * limit
+    };
+    return query;
 }
 exports.getAllVideo = async function (ids) {
-    return new Promise(function (resolve, reject) {
-        let where = {
+    let query = {
+        where: {
             id: ids,
             type: vnVideoEnum.TYPE_VOD,
             status: vnVideoEnum.STATUS_APPROVE,
@@ -76,53 +66,48 @@ exports.getAllVideo = async function (ids) {
             published_time: {
                 [Op.lte]: new Date()
             }
-        };
-        let query = VnVideo.findAll({
-            where: where,
-            attributes: ['vn_video.*'],
-            include: {
-                model: VnUser, as: 'u',
-                attributes: ['id', 'bucket', 'path', 'full_name', 'msisdn'],
-            },
-            order: Sequelize.literal("FIELD(vn_video.id," + ids.toString() + ")")
-        }).then(function (videos) {
-            if (videos != null) {
-                // console.log(videos);
-                resolve(videos);
-            } else {
-                resolve(null);
-            }
-        }).catch(function (err) {
-            console.log(err);
-            resolve(null);
-        });
-    });
+        },
+        attributes: ['vn_video.*'],
+        include: {
+            model: VnUser, as: 'u',
+            attributes: ['id', 'bucket', 'path', 'full_name', 'msisdn'],
+        },
+        order: Sequelize.literal("FIELD(vn_video.id," + ids.toString() + ")")
+    }
+
+    return query;
 }
-// exports.getDetail = async function (id, type) {
-//     return new Promise(function (resolve, reject) {
-//
-//         let where = {
-//             id: id,
-//             type: type
-//         };
-//         let query = VnVideo.findOne({
-//             where: where,
-//         }).then(function (objVideo) {
-//             if (objVideo != null) {
-//                 resolve(objVideo.dataValues);
-//             } else {
-//                 resolve(null);
-//             }
-//
-//         }).catch(function (err) {
-//             console.log(err);
-//             resolve(null);
-//         });
-//     });
-//
-// }
-getDetail = function(id, type = "", isObject = false, includeDraft = false){
-    return new Promise(function(resolve, reject){
+exports.getHotVideoWithOutIds = function (ids, limit = null, offset = null) {
+    let query = {
+        where: {
+            id: {
+                $notIn: ids
+            },
+            type: vnVideoEnum.TYPE_VOD,
+            status: vnVideoEnum.STATUS_APPROVE,
+            is_active: vnVideoEnum.ACTIVE,
+            is_no_copyright: 0,
+            published_time: {
+                [Op.lte]: new Date()
+            },
+            is_hot: 1
+
+        },
+        attributes: ['vn_video.*'],
+        include: {
+            model: VnUser, as: 'u',
+            attributes: ['id', 'bucket', 'path', 'full_name', 'msisdn'],
+        },
+        order: Sequelize.literal("FIELD(vn_video.id," + ids.toString() + ")"),
+        limit: limit,
+        offset: offset
+    }
+
+
+    return query;
+}
+getDetail = function (id, type = "", isObject = false, includeDraft = false) {
+    return new Promise(function (resolve, reject) {
         let where = {
             id: id,
             is_active: vnVideoEnum.ACTIVE,
@@ -174,7 +159,7 @@ exports.getNewVideo = async function (filterType = '', limit = null, offset = nu
             case Obj.MUSIC_FILTER:
                 const VnConfigBase = require('../models/config.model');
                 filterList = VnConfigBase.getConfigKey('music.category.list').trim();
-                if (utils.isEmpty(filterList)) {
+                if (Utils.isEmpty(filterList)) {
                     where.category_id = filterList.split(",");
                 } else {
                     limit = 0;
@@ -182,7 +167,7 @@ exports.getNewVideo = async function (filterType = '', limit = null, offset = nu
                 break;
             case Obj.VOD_FILTER:
                 filterList = VnConfigBase.getConfigKey('video.category.list').trim();
-                if (utils.isEmpty(filterList)) {
+                if (Utils.isEmpty(filterList)) {
                     where.category_id = filterList.split(",");
                 } else {
                     limit = 0;
@@ -253,7 +238,7 @@ exports.getRecommendVideo = async function (recommend = 1, limit = null, offset 
     });
 }
 
-exports.getByIdsQuery = async function (filterType = '', ids, o, limit = null, offset = null) {
+exports.getByIdsQuery = async function (filterType = '', ids, limit = null, offset = null) {
 
     return new Promise(function (resolve, reject) {
         let where = {
@@ -271,7 +256,7 @@ exports.getByIdsQuery = async function (filterType = '', ids, o, limit = null, o
             case Obj.MUSIC_FILTER:
                 const VnConfigBase = require('../models/config.model');
                 filterList = VnConfigBase.getConfigKey('music.category.list').trim();
-                if (utils.isEmpty(filterList)) {
+                if (Utils.isEmpty(filterList)) {
                     where.category_id = filterList.split(",");
                 } else {
                     limit = 0;
@@ -279,7 +264,7 @@ exports.getByIdsQuery = async function (filterType = '', ids, o, limit = null, o
                 break;
             case Obj.VOD_FILTER:
                 filterList = VnConfigBase.getConfigKey('video.category.list').trim();
-                if (utils.isEmpty(filterList)) {
+                if (Utils.isEmpty(filterList)) {
                     where.category_id = filterList.split(",");
                 } else {
                     limit = 0;
@@ -321,8 +306,8 @@ exports.getRecommendVideoMixQuery = async function (limit = null, offset = null)
     let offset30Percent = Math.ceil(offset * 30 / 100);
 
     let recommend1 = await this.getRecommendVideo(vnVideoEnum.RECOMMEND_DYNAMIC, limit40Percent, offset40Percent);
-    let recommend2 = utils.arrayColumn(await this.getRecommendVideo(vnVideoEnum.RECOMMEND_FIX, limit30Percent, offset30Percent), 'id');
-    let recommend3 = utils.arrayColumn(await VnVideoRecommendBase.getByActiveQuery(limit30Percent, offset30Percent), 'video_id');
+    let recommend2 = Utils.arrayColumn(await this.getRecommendVideo(vnVideoEnum.RECOMMEND_FIX, limit30Percent, offset30Percent), 'id');
+    let recommend3 = Utils.arrayColumn(await VnVideoRecommendBase.getByActiveQuery(limit30Percent, offset30Percent), 'video_id');
 
     let ids = [];
     for (let i = 0; i < recommend1.lenght; i++) {
@@ -347,8 +332,8 @@ exports.getRecommendVideoMixQuery = async function (limit = null, offset = null)
         ids.push(recommend3[i]);
     }
 
-    let idsort = utils.ksort(ids);
-    idsort = utils.array_slice(idsort, 0, limit);
+    let idsort = Utils.ksort(ids);
+    idsort = Utils.array_slice(idsort, 0, limit);
 
     return await this.getByIdsQuery(null, ids, limit);
 
@@ -372,7 +357,7 @@ exports.getAllVideosByUser = async function (filterType = '', userId, limit, off
             case Obj.MUSIC_FILTER:
                 const VnConfigBase = require('../models/config.model');
                 filterList = VnConfigBase.getConfigKey('music.category.list').trim();
-                if (utils.isEmpty(filterList)) {
+                if (Utils.isEmpty(filterList)) {
                     where.category_id = filterList.split(",");
                 } else {
                     limit = 0;
@@ -380,7 +365,7 @@ exports.getAllVideosByUser = async function (filterType = '', userId, limit, off
                 break;
             case Obj.VOD_FILTER:
                 filterList = VnConfigBase.getConfigKey('video.category.list').trim();
-                if (utils.isEmpty(filterList)) {
+                if (Utils.isEmpty(filterList)) {
                     where.category_id = filterList.split(",");
                 } else {
                     limit = 0;
@@ -415,11 +400,10 @@ exports.getAllVideosByUser = async function (filterType = '', userId, limit, off
 
 }
 
-# huynx2
 
-getVideosByUser = function(filterType = '', userId, limit = 10, offset = 0, type = 'VOD'){
+getVideosByUser = function (filterType = '', userId, limit = 10, offset = 0, type = 'VOD') {
     console.log('getVideosByUser')
-    return new Promise(async function(resolve, reject){
+    return new Promise(async function (resolve, reject) {
         let where = {
             created_by: userId,
             status: vnVideoEnum.STATUS_APPROVE,
@@ -439,7 +423,7 @@ getVideosByUser = function(filterType = '', userId, limit = 10, offset = 0, type
                 //Neu khong cau hinh the loai thi khong tra ve ket qua
                 if (filterList) {
                     where.category_id = filterList.split(',');
-                }else{
+                } else {
                     checkLimit = false;
                 }
                 break;
@@ -457,16 +441,70 @@ getVideosByUser = function(filterType = '', userId, limit = 10, offset = 0, type
         VnVideo.findAll({
             where: where,
             //attributes: ['vn_video.*'],
-            include:{
+            include: {
                 model: VnUser, as: 'u',
-                attributes: ['id','bucket', 'path', 'full_name', 'msisdn'],
+                attributes: ['id', 'bucket', 'path', 'full_name', 'msisdn'],
             }
-        }).then(function(vnVideo){
-            //vnVideo.forEach(function(vi){
-            //    console.log(vi.id);
-            //})
+        }).then(function (vnVideo) {
             resolve(vnVideo);
-        }).catch(function(err){
+        }).catch(function (err) {
+            console.log(err);
+            resolve(false);
+        });
+    })
+}
+
+exports.getVideosByUser = getVideosByUser;
+
+getNewVideo = function (filterType = '', limit = null, offset = null) {
+    return new Promise(async function (resolve, reject) {
+        console.log('getNewVideo');
+        let where = {
+            type: vnVideoEnum.TYPE_VOD,
+            status: vnVideoEnum.STATUS_APPROVE,
+            is_active: vnVideoEnum.ACTIVE,
+            is_no_copyright: 0,
+            published_time: {
+                [Op.lt]: new Date() // date('Y-m-d H:i:s')
+            }
+            //{
+            //[Op.lt]: Utilservice.currentCacheTime() // date('Y-m-d H:i:s')
+            //}
+        };
+        let checkLimit = true;
+        switch (filterType) {
+            case vnVideoEnum.MUSIC_FILTER:
+                let cfMusic = await VnConfig.getConfig('music.category.list');
+                filterList = trim(cfMusic);
+                //Neu khong cau hinh the loai thi khong tra ve ket qua
+                if (filterList) {
+                    where.category_id = filterList.split(',');
+                } else {
+                    checkLimit = false;
+                }
+                break;
+            case vnVideoEnum.VOD_FILTER:
+                let cfVideo = await VnConfig.getConfig('video.category.list');
+                filterList = trim(cfVideo);
+                if (filterList) {
+                    where.category_id = filterList.split(',');
+                } else {
+                    checkLimit = false;
+                }
+                break;
+        }
+        //if(checkLimit !== false){
+        VnVideo.findAll({
+            where: where,
+            //attributes: ['vn_video.*'],
+            include: {
+                model: VnUser, as: 'u',
+                //attributes: ['vn_user.*'],
+            }
+        }).then(function (vnVideo) {
+            //console.log(vnVideo);
+            resolve(vnVideo);
+        }).catch(function (err) {
             console.log(err);
             resolve(false);
         });
@@ -476,88 +514,28 @@ getVideosByUser = function(filterType = '', userId, limit = 10, offset = 0, type
     })
 }
 
-exports.getVideosByUser = getVideosByUser;
-
-getNewVideo = function(filterType = '', limit = null, offset = null){
-    return new Promise(async function(resolve, reject){
-        console.log('getNewVideo');
-        let where = {
-            type: vnVideoEnum.TYPE_VOD,
-            status: vnVideoEnum.STATUS_APPROVE,
-            is_active: vnVideoEnum.ACTIVE,
-            is_no_copyright: 0,
-            published_time: {
-                [Op.lt]: new Date() // date('Y-m-d H:i:s')
-    }
-    //{
-    //[Op.lt]: utilService.currentCacheTime() // date('Y-m-d H:i:s')
-    //}
-};
-let checkLimit = true;
-switch (filterType) {
-    case vnVideoEnum.MUSIC_FILTER:
-        let cfMusic = await VnConfig.getConfig('music.category.list');
-        filterList = trim(cfMusic);
-        //Neu khong cau hinh the loai thi khong tra ve ket qua
-        if (filterList) {
-            where.category_id = filterList.split(',');
-        }else{
-            checkLimit = false;
-        }
-        break;
-    case vnVideoEnum.VOD_FILTER:
-        let cfVideo = await VnConfig.getConfig('video.category.list');
-        filterList = trim(cfVideo);
-        if (filterList) {
-            where.category_id = filterList.split(',');
-        } else {
-            checkLimit = false;
-        }
-        break;
-    }
-    //if(checkLimit !== false){
-    VnVideo.findAll({
-        where: where,
-        //attributes: ['vn_video.*'],
-        include:{
-            model: VnUser, as: 'u',
-            //attributes: ['vn_user.*'],
-        }
-    }).then(function(vnVideo){
-        //console.log(vnVideo);
-        resolve(vnVideo);
-    }).catch(function(err){
-        console.log(err);
-        resolve(false);
-    });
-    //}else{
-    //    resolve({});
-    //}
-    })
-}
-
 module.exports.getNewVideo = getNewVideo;
 
 
-updateLikeVsDisLikeCount = function(id, like, dislike){
-    return new Promise(function(resolve, reject){
+updateLikeVsDisLikeCount = function (id, like, dislike) {
+    return new Promise(function (resolve, reject) {
         VnVideo.update(
             {
-                dislike_count: db.sequelize.literal('dislike_count + '+dislike),
-                like_count: db.sequelize.literal('dislike_count + '+like)
+                dislike_count: db.sequelize.literal('dislike_count + ' + dislike),
+                like_count: db.sequelize.literal('dislike_count + ' + like)
             },
             {
-                where: {id:id}
+                where: { id: id }
             }
-        ).then(function(video){
+        ).then(function (video) {
             // console.log('getConfig',configs);
-            if(video != null){
+            if (video != null) {
                 resolve(video);
-            }else{
+            } else {
                 resolve(false);
             }
-        }).catch(function(err){
-            console.log('updateItem',err);
+        }).catch(function (err) {
+            console.log('updateItem', err);
             resolve(false);
         });
     });
@@ -565,32 +543,29 @@ updateLikeVsDisLikeCount = function(id, like, dislike){
 
 exports.updateLikeVsDisLikeCount = updateLikeVsDisLikeCount;
 
-getVideoRelatedQuery = async function(distinctVideo, categoryId, userId, limit, offset = 0, videoTime = null, isFilm = false, video = [])
-    {
-        return new Promise(async function(resolve, reject){
-
-        });
-        let maxRelatedVideo = (params.max_related_video) ? params.max_related_video : 50;
+getVideoRelatedQuery = async function (distinctVideo, categoryId, userId, limit, offset = 0, videoTime = null, isFilm = false, video = []) {
+    return new Promise(async function (resolve, reject) {
+        let maxRelatedVideo = (config.max_related_video) ? config.max_related_video : 50;
         let arrCateVideo = await getVideoIdInCategoryNotContainChannelQuery(categoryId, maxRelatedVideo, 0, videoTime, userId);
         let filmRelated = [];
-        if(isFilm) {
+        if (isFilm) {
             let videoName = video.name;
-            let numberInVideoName = videoName.replace("/[^0-9]/","");
-            let videoNameWithoutNumber = videoName.replace("/[0-9]/","");
-            let filmRelated.push({
+            let numberInVideoName = videoName.replace("/[^0-9]/", "");
+            let videoNameWithoutNumber = videoName.replace("/[0-9]/", "");
+            let filmRelated = {
                 id: video.id,
                 numberInVideoName: numberInVideoName,
                 name: videoName
-            });
+            };
 
             let searchResults = await searchRelatedVideo(videoNameWithoutNumber);
             let relate = [];
-            for(let i=0; i<searchResults.length; i++){
-            //foreach ($searchResults as $rs) {
+            for (let i = 0; i < searchResults.length; i++) {
+                //foreach ($searchResults as $rs) {
                 let rs = searchResults[i];
                 relate.push({
                     id: rs._source.id,
-                    numberInVideoName: rs._source.name.replace("/[^0-9]/",""), // => preg_replace("/[^0-9]/","",$rs['_source']['name']),
+                    numberInVideoName: rs._source.name.replace("/[^0-9]/", ""), // => preg_replace("/[^0-9]/","",$rs['_source']['name']),
                     name: rs._source.name
                 });
             }
@@ -601,29 +576,23 @@ getVideoRelatedQuery = async function(distinctVideo, categoryId, userId, limit, 
 
             //     return $rs;
             // });
-
-
             //print_r($relate);die();
-
         }
-
-        arrChannelVideo = await getVideoIdInChannelQuery(userId, maxRelatedVideo, 0, videoTime);
-
-
+        let arrChannelVideo = await getVideoIdInChannelQuery(userId, maxRelatedVideo, 0, videoTime);
         let arrMerger = [];
         let cCate = 0;
         let cUser = 0;
 
-        for(let i=0; i < arrChannelVideo.length; i++){
+        for (let i = 0; i < arrChannelVideo.length; i++) {
             let cvItem = arrChannelVideo[i];
-            if(cvItem.id == distinctVideo){
+            if (cvItem.id == distinctVideo) {
                 let keyDistinct = i;
                 //array_splice(arrChannelVideo, 0, keyDistinct+1);
-                arrChannelVideo.splice(0, keyDistinct+1);
+                arrChannelVideo.splice(0, keyDistinct + 1);
                 break;
             }
         }
-        
+
         //Lay video theo ty le 6:4
         for (let i = 0; i < (arrCateVideo.length + arrChannelVideo.length); i++) {
             if (i % 10 <= 3 && arrChannelVideo.cUser) {
@@ -642,59 +611,51 @@ getVideoRelatedQuery = async function(distinctVideo, categoryId, userId, limit, 
         let arrSlide = arrMerger.slice(offset, limit); // array_slice($arrMerger, $offset, $limit);
         //shuffle($arrSlide);
         let where = {};
-        if(arrSlide){
+        if (arrSlide) {
             where.id = arrSlide;
-            where.type =  "VOD";
+            where.type = "VOD";
             where.status = STATUS_APPROVE;
             where.is_active = ACTIVE;
             where.is_no_copyright = 0;
             where.published_time = {
-                [Op.lt]: new Date() // date('Y-m-d H:i:s')
+                [Op.lt]: Utils.currentCacheTime() // date('Y-m-d H:i:s')
             };
 
-
-
-            // $query = self::find()
-            //     ->asArray()
-            //     ->select('v.*, u.id as user_id, u.bucket as user_bucket, u.path as user_path, u.full_name, u.msisdn')
-            //     ->from(self::tableName() . ' v')
-            //     ->leftJoin('vt_user u', 'u.id=v.created_by')
-            //     ->where(['v.id' => $arrSlide])
-            //     ->andWhere('v.type = :type', [':type' => 'VOD'])
-            //     ->andWhere('v.status = :status', [':status' => self::STATUS_APPROVE])
-            //     ->andWhere('v.is_active = :is_active', [':is_active' => self::ACTIVE])
-            //     ->andWhere('v.is_no_copyright=0')
-            //     ->andWhere('v.published_time <= :published_time', [':published_time' => Utils::currentCacheTime()])
-            //     ->orderBy([new Expression('FIELD (v.id, ' . implode(',', array_filter($arrSlide)) . ')')]);
-        }else{
-
-            // $query = self::find()
-            //     ->asArray()
-            //     ->select('v.*, u.id as user_id, u.bucket as user_bucket, u.path as user_path, u.full_name, u.msisdn')
-            //     ->from(self::tableName() . ' v')
-            //     ->leftJoin('vt_user u', 'u.id=v.created_by')
-            //     ->where('1=2');
-
+            VnVideo.findAll({
+                where: where,
+                limit: limit, offset: offset
+            }).then(function (vnVideo) {
+                //vnVideo.forEach(function(vi){
+                //    console.log(vi.id);
+                //})
+                resolve(vnVideo);
+            }).catch(function (err) {
+                console.log(err);
+                resolve(false);
+            });
+        } else {
+            resolve([]);
         }
-        return query;
-    }
+    });
+}
+module.exports.getVideoRelatedQuery = getVideoRelatedQuery;
 
-getVideoByType = function(arrSlide, type = "VOD"){
-    return new Promise(function(resolve, reject){
+getVideoByType = function (arrSlide, type = "VOD") {
+    return new Promise(function (resolve, reject) {
         where.id = arrSlide;
-            where.type =  "VOD";
-            where.status = STATUS_APPROVE;
-            where.is_active = ACTIVE;
-            where.is_no_copyright = 0;
-            where.published_time = {
-                [Op.lt]: new Date() // date('Y-m-d H:i:s')
-            };
+        where.type = "VOD";
+        where.status = STATUS_APPROVE;
+        where.is_active = ACTIVE;
+        where.is_no_copyright = 0;
+        where.published_time = {
+            [Op.lt]: new Date() // date('Y-m-d H:i:s')
+        };
 
         let where = {
             id: arrSlide,
             status: vnVideoEnum.STATUS_APPROVE,
             is_active: vnVideoEnum.ACTIVE,
-            is_no_copyright: 0,            
+            is_no_copyright: 0,
             published_time: {
                 [Op.lt]: new Date(), // date('Y-m-d H:i:s')
                 [Op.lt]: videoTime, // date('Y-m-d H:i:s')
@@ -708,28 +669,27 @@ getVideoByType = function(arrSlide, type = "VOD"){
             where: where,
             order: [
                 ['published_time', 'DESC'],
-            ], 
+            ],
             limit: limit, offset: offset
-        }).then(function(vnVideo){
+        }).then(function (vnVideo) {
             //vnVideo.forEach(function(vi){
             //    console.log(vi.id);
             //})
             resolve(vnVideo);
-        }).catch(function(err){
+        }).catch(function (err) {
             console.log(err);
             resolve(false);
         });
     })
 }
 
-getVideoIdInCategoryNotContainChannelQuery = function(categoryId, limit =10, offset = 0, videoTime = null, notContainChannel)
-{
-    return new Promise(async function(resolve, reject){
+getVideoIdInCategoryNotContainChannelQuery = function (categoryId, limit = 10, offset = 0, videoTime = null, notContainChannel) {
+    return new Promise(async function (resolve, reject) {
         let where = {
             category_id: categoryId,
             status: vnVideoEnum.STATUS_APPROVE,
             is_active: vnVideoEnum.ACTIVE,
-            is_no_copyright: 0,            
+            is_no_copyright: 0,
             published_time: {
                 [Op.lt]: new Date(), // date('Y-m-d H:i:s')
                 [Op.lt]: videoTime, // date('Y-m-d H:i:s')
@@ -738,58 +698,102 @@ getVideoIdInCategoryNotContainChannelQuery = function(categoryId, limit =10, off
                 [Op.ne]: notContainChannel
             }
         };
-                
+
         VnVideo.findAll({
             where: where,
             order: [
                 ['published_time', 'DESC'],
-            ], 
+            ],
             limit: limit, offset: offset
-        }).then(function(vnVideo){
+        }).then(function (vnVideo) {
             //vnVideo.forEach(function(vi){
             //    console.log(vi.id);
             //})
             resolve(vnVideo);
-        }).catch(function(err){
+        }).catch(function (err) {
             console.log(err);
             resolve(false);
         });
     })
-            
+
 }
 
-searchRelatedVideo = function(name){
+searchRelatedVideo = function (name) {
     return "";
 }
-module.exports.getVideoIdInCategoryNotContainChannelQuery = getVideoIdInCategoryNotContainChannelQuery;  
+module.exports.getVideoIdInCategoryNotContainChannelQuery = getVideoIdInCategoryNotContainChannelQuery;
 
-getVideoIdInChannelQuery = function(userId, limit = 10, offset = 0, videoTime = null)
-{
-    return new Promise(async function(resolve, reject){
-        let where = {            
+getVideoIdInChannelQuery = function (userId, limit = 10, offset = 0, videoTime = null) {
+    return new Promise(async function (resolve, reject) {
+        let where = {
             status: vnVideoEnum.STATUS_APPROVE,
             is_active: vnVideoEnum.ACTIVE,
-            is_no_copyright: 0,            
+            is_no_copyright: 0,
             published_time: {
                 [Op.lt]: new Date(), // date('Y-m-d H:i:s')
                 [Op.lt]: videoTime, // date('Y-m-d H:i:s')
             },
             created_by: userId
-        };                
+        };
         VnVideo.findAll({
             where: where,
             order: [
                 ['published_time', 'DESC'],
-            ], 
+            ],
             limit: limit, offset: offset
-        }).then(function(vnVideo){
+        }).then(function (vnVideo) {
             //vnVideo.forEach(function(vi){
             //    console.log(vi.id);
             //})
             resolve(vnVideo);
-        }).catch(function(err){
+        }).catch(function (err) {
             console.log(err);
             resolve(false);
         });
-    })     
-}  
+    })
+}
+exports.getVideosByIdsQuery = function (ids, limit = 10, offset = null, type = 'VOD') {
+    return new Promise(async function (resolve, reject) {
+        let where = {
+            id: ids,
+            status: vnVideoEnum.STATUS_APPROVE,
+            is_active: vnVideoEnum.ACTIVE,
+            type: type,
+            is_no_copyright: 0,
+            published_time: {
+                [Op.lte]: new Date() // date('Y-m-d H:i:s')
+            },
+            created_by: userId
+        };
+        VnVideo.findAll({
+            where: where,
+            attributes: ['vn_video.*'],
+            include: {
+                model: VnUser, as: 'u',
+                attributes: ['id', 'bucket', 'path', 'full_name', 'msisdn'],
+            },
+            order: Sequelize.literal("FIELD(vn_video.id," + ids.toString() + ")"),
+            limit: limit, offset: offset
+        }).then(function (vnVideo) {
+            //vnVideo.forEach(function(vi){
+            //    console.log(vi.id);
+            //})
+            resolve(vnVideo);
+        }).catch(function (err) {
+            console.log(err);
+            resolve(false);
+        });
+    })
+}
+
+exports.getVideosFindAllQuery = function (query, func = "getVideosFindAllQuery") {
+    return new Promise(async function (resolve, reject) {
+        query.raw = true;
+        VnVideo.findAll(query).then(function (vnVideo) {
+            resolve(vnVideo);
+        }).catch(function (err) {
+            console.log(func, err);
+            resolve(null);
+        });
+    })
+}

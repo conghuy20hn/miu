@@ -1,22 +1,34 @@
-const db = require('../models');
-const VtConfigBase = require('../models/config.model');
-const VnUserFollowModel = require('../models/vnUserFollow.model');
-const VnVideoModel = require('../models/vnVideo.model');
+const VnVideoBase = require('../models/VnVideo.model');
 const vnVideoEmun = require('../services/lib/vnVideoEnum');
 const Obj = require('../lib/Obj');
-const sequelize = db.sequelize;
 const VnHelper = require('../lib/VnHelper');
 const Utils = require('../lib/Utils');
 const CONFIG = require('../config/config');
 const params = require('../config/params');
-serialize = function (id, query, cache = false, name = null, type = null, appId = 'app-api') {
 
-    let contents = query;
+const dbredis = require('../config/redis');
+const redis = dbredis.constant;
+const redisService = require('../services/redis.service');
+var md5 = require('md5');
+serialize = async function (id, query, cache = false, name = null, type = null, appId = 'app-api') {
+    let key = md5(id + "_" + appId + "_" + JSON.stringify(query));
+    let contents = [];
+    if (params.configStr.cache_enabled == true && cache == true) {
+        contents = await redisService.getKey(key, dbredis.constant.dbCache);
+        if (Utils.isEmpty(contents)) {
+            contents = await VnVideoBase.getVideosFindAllQuery(query);
+
+            redisService.setKey(key, JSON.stringify(contents), redis.CACHE_10MINUTE, redis.dbCache);
+        } else {
+            contents = JSON.parse(contents);
+
+        }
+    } else {
+        contents = await VnVideoBase.getVideosFindAllQuery(query);
+    }
     let items = [];
 
     if (!Utils.isEmpty(contents) && contents.length > 0) {
-        //let arrReturn = await getListVideo(contents, id);
-        let videos = [];
         for (let i = 0; i < contents.length; i++) {
             let content = contents[i];
             let objUser = content.u;
@@ -32,7 +44,7 @@ serialize = function (id, query, cache = false, name = null, type = null, appId 
 
             item.fullName = content.name;
             item.description = content.description;
-            if (appId == 'app-web') {
+            if (appId == params.configStr.appIdWeb) {
                 item.coverImage = VnHelper.getThumbUrl(content.bucket, content.path, Obj.SIZE_VIDEO_WEB_HOME);
                 if (id == Obj.VIDEO_HOT_2) {
                     item.coverImage = VnHelper.getThumbUrl(content.bucket, content.path, Obj.SIZE_VIDEO_WEB_HOME, true, true);
@@ -78,13 +90,13 @@ serialize = function (id, query, cache = false, name = null, type = null, appId 
                 item.msisdn = (Utils.isEmpty(objUser.msisdn)) ? "" : Utils.hideMsisdn(objUser.msisdn);
             }
 
-            if (appId == 'app-wap' || appId == 'app-wap') {
+            if (appId == params.configStr.appIdApi || appId == params.configStr.appIdWap) {
                 item.slug = content.slug;
             }
             //Neu video bi tu choi status =3 and co feedback
             if (content.status == vnVideoEmun.STATUS_DELETE && Utils.isset(content.feedback_status)) {
                 item.feedback_status = content.feedback_status;
-                item.feedback_reject_reason = contentfeedback_reject_reason;
+                item.feedback_reject_reason = content.feedback_reject_reason;
             }
             items.push(item);
         }

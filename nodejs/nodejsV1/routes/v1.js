@@ -38,6 +38,14 @@ router.route('/default/get-list-comment').get(DefaultController.getListComment);
 router.route('/default/get-more-content').get(DefaultController.getMoreContent);
 router.route('/default/get-film').get(DefaultController.getFilm);
 
+router.route('/auth/authorize').post(UserController.authorize);
+router.route('/auth/get-captcha').get(UserController.getCaptcha);
+router.route('/auth/logout').post(UserController.logout);
+router.route('/auth/push-otp').post(UserController.createdOpt);
+router.route('/auth/change-password').post(UserController.changePassword);
+router.route('/auth/sign-up-by-msisdn').post(UserController.sign);
+
+
 // router.post('/users/login', UserController.login);
 // router.get('/dash', passport.authenticate('jwt', {session: false}), HomeController.Dashboard)
 
@@ -81,11 +89,11 @@ router.post('/video/get-video-stream', VideoController.actionGetVideoStream);
 router.post('/video/toggle-like-video', VideoController.actionToggleLikeVideo);
 router.post('/video/get-relation', VideoController.actionToggleLikeVideo);
 router.post('/video/toggle-like-video', VideoController.actionToggleLikeVideo);
-router.post('/video/download-video', VideoController.actionDownloadVideo);
+// router.post('/video/download-video', VideoController.actionDownloadVideo);
 router.post('/video/related-video-box', VideoController.actionRelatedVideoBox);
 /* huync2 video */
 
 //********* API DOCUMENTATION **********
-// router.use('/docs/api.json', express.static(path.join(__dirname, '/../public/v1/documentation/api.json')));
-// router.use('/docs', express.static(path.join(__dirname, '/../public/v1/documentation/dist')));
+router.use('/docs/api.json', express.static(path.join(__dirname, '/../public/v1/documentation/api.json')));
+router.use('/docs', express.static(path.join(__dirname, '/../public/v1/documentation/dist')));
 module.exports = router;

@@ -4,6 +4,8 @@ const CategoryObj = require('../lib/CategoryObj');
 const VideoObj = require('../lib/VideoObj');
 const CommentObj = require('../lib/CommentObj');
 const ChannelObj = require('../lib/ChannelObj');
+const UserPlaylistVideoObj = require('../lib/UserPlaylistVideoObj');
+const UserPlaylistObj = require('../lib/UserPlaylistObj');
 const config = require('../models/config.model');
 const groupCate = require('../models/VnGroupCategory.model');
 const packageBase = require('../models/VnPackage.model');
@@ -16,23 +18,35 @@ const VnUserBase = require('../models/VnUser.model');
 const VnPlaylistBase = require('../models/VnPlaylist.model');
 const VnFeedBackBase = require('../models/VnFeedBack.model');
 const VnUserFollowBase = require('../models/VnUserFollow.model');
+const VnUserPlaylistItemBase = require('../models/VnUserPlaylistItem.model');
+const VnVideoSearchBase = require('../models/VnVideoSearch.model');
+const VnUserSearchBase = require('../models/VnUserSearch.model');
+// const VnHistoryViewBase = require('../models/VnHistoryView.model');
+const VnVideoHotBase = require('../models/VnVideoHot.model');
+const Common = require('../lib/CommonModel');
 const params = require('../config/params');
-const utils = require('../lib/Utils');
+const Utils = require('../lib/Utils');
 const VnHelper = require('../lib/VnHelper');
 const { to, ReE, ReS } = require('../services/util.service');
 const vnFollow = require('../lib/VnFollow');
+const initUser = require('../lib/helper/initUser');
 const validator = require('validator');
 const vc = require('version_compare');
 const configStr = params.configStr;
+const dbredis = require('../config/redis');
+const redis = dbredis.constant;
+const redisService = require('../services/redis.service');
 
 exports.getHome = async function (req, res) {
+
     let limitN = configStr.videoLimitNboxHome;
     let limitCategory = configStr.appCategoryLimit = 12;
-    let msisdn = '84989826271'; //todo msisdn
-    let appId = '';
+    let user = initUser.auth(req);
+    let msisdn = (user.responseCode == response.SUCCESS && Utils.isEmpty(user.data)) ? user.data.msisdn : ""; //todo msisdn
+    var appId = req.headers['app_id'];
     let dataResponse = [];
-    let categoryBox = CategoryObj.serialize(
-        obj.CATEGORY_PARENT, await groupCate.getParents(0, limitCategory, false), true, appId
+    let categoryBox = await CategoryObj.serialize(
+        obj.CATEGORY_PARENT, await groupCate.getParents(0, limitCategory, true), true, appId
     );
 
     if (typeof categoryBox.content !== 'undefined' && categoryBox.content) {
@@ -41,11 +55,11 @@ exports.getHome = async function (req, res) {
     //Lay danh sach video moi
     let ids = await VnVideoBase.getVideoHomePage(limitN, true);
     // //home_video_v2
-    videoBox = VideoObj.serialize(
+    videoBox = await VideoObj.serialize(
         obj.HOME_VIDEO_V2, await VnVideoBase.getAllVideo(ids), true, false, obj.NEWSFEED, appId
     );
 
-    if (utils.isset(videoBox.content) && videoBox.content) {
+    if (Utils.isset(videoBox.content) && videoBox.content) {
         dataResponse.push(videoBox);
     }
 
@@ -53,7 +67,7 @@ exports.getHome = async function (req, res) {
         responseCode: response.SUCCESS,
         message: await response.getMessage(response.SUCCESS),
         data: dataResponse,
-        popup: vnFollow.loadPromotionPopup(msisdn)
+        popup: await vnFollow.loadPromotionPopup(msisdn)
     }
 
     return ReS(res, responseObj, 200);
@@ -61,6 +75,11 @@ exports.getHome = async function (req, res) {
 };
 
 exports.getSetting = async function (req, res) {
+    let init = initUser.auth(req);
+    let needHiddenFreemiumContent = 0;
+    if (init.responseCode != 200) {
+        needHiddenFreemiumContent = Utils.isEmpty(init.data) ? 0 : init.data.needHiddenFreemiumContent;
+    }
     let htmlContent =
         [
             {
@@ -95,7 +114,7 @@ exports.getSetting = async function (req, res) {
 
     }
     let type = ['VOD', 'FILM'];
-    if (hiddenPackage) {
+    if (needHiddenFreemiumContent == 1 || hiddenPackage) { //hide package when approved app ios
         type = 'VOD';
     }
     categories = await groupCate.getAllActiveCategory(type);
@@ -169,16 +188,18 @@ exports.getSetting = async function (req, res) {
 };
 exports.getListPackage = async function (req, res) {
     //todo 
-    let msisdn = '0989826271';
+
+    let user = initUser.auth(req);
+    let msisdn = (user.responseCode == obj.SUCCESS && Utils.isEmpty(user.data)) ? user.data.msisdn : '';
 
     let needHiddenFreemiumContent = false;
     let osType = req.query.os_type;
     let osVersionCode = req.query.os_version_code;
     let distributionId = req.query.distribution_id;
     let source = req.query.source;
-    let hiddenPackage = checkHiddenContent(osType, osVersionCode);
+    let hiddenPackage = await Common.checkHiddenContent(osType, osVersionCode);
     let popupPromotion = await vnFollow.loadPromotionPopup(msisdn, true);
-    if (popupPromotion != null) {
+    if (popupPromotion.length > 0) {
         let responseObj = {
             responseCode: response.SUCCESS,
             message: await response.getMessage(response.SUCCESS),
@@ -204,7 +225,7 @@ exports.getListPackage = async function (req, res) {
     if (arrPackages != null) {
         arrPackages.forEach(function (package) {
 
-            if ((utils.isEmpty(distributionId) && utils.isEmpty(package.distribution_id)) || (utils.isEmpty(distributionId) && strSub.includes(package.id)) || (!utils.isEmpty(distributionId) && distributionId == package.distribution_id)) {
+            if ((Utils.isEmpty(distributionId) && Utils.isEmpty(package.distribution_id)) || (Utils.isEmpty(distributionId) && strSub.includes(package.id)) || (!Utils.isEmpty(distributionId) && distributionId == package.distribution_id)) {
 
                 let item = {};
                 item.id = package.id;
@@ -214,29 +235,29 @@ exports.getListPackage = async function (req, res) {
                 item.description = package.description;
 
                 let cycleArr = package.charge_range.split(' ');
-                item.cycle = utils.isset(cycleArr[1]) ? cycleArr[1] : '';
+                item.cycle = Utils.isset(cycleArr[1]) ? cycleArr[1] : '';
                 if (strSub.includes(package.id)) {
                     packageName = package.name;
                     item.status = 1;
                     let arrReplace = {
-                        PACKAGENAME: utils.htmlspecialchars(item.name, 'ENT_QUOTES', 'UTF-8'),
-                        CYCLE: utils.convertDay(package.charge_range),
+                        PACKAGENAME: Utils.htmlspecialchars(item.name, 'ENT_QUOTES', 'UTF-8'),
+                        CYCLE: Utils.convertDay(package.charge_range),
                         PRICE: package.fee
                     };
                     let popup = [];
-                    popup.push(utils.str_replace(configStr.listPackageCancelConfirm, utils.array_keys(arrReplace), utils.array_values(arrReplace)));
+                    popup.push(Utils.str_replace(configStr.listPackageCancelConfirm, Utils.array_keys(arrReplace), Utils.array_values(arrReplace)));
                     item.popup = popup;
 
                 } else {
                     item.status = 0;
                     let arrReplace = {
-                        PACKAGENAME: utils.htmlspecialchars(item.name, 'ENT_QUOTES', 'UTF-8'),
-                        CYCLE: utils.convertDay(package.charge_range),
+                        PACKAGENAME: Utils.htmlspecialchars(item.name, 'ENT_QUOTES', 'UTF-8'),
+                        CYCLE: Utils.convertDay(package.charge_range),
                         PRICE: package.fee
                     };
 
                     let popup = [];
-                    popup.push(utils.str_replace(configStr.listPackageConfirm, utils.array_keys(arrReplace), utils.array_values(arrReplace)));
+                    popup.push(Utils.str_replace(configStr.listPackageConfirm, Utils.array_keys(arrReplace), Utils.array_values(arrReplace)));
                     item.popup = popup;
 
                 }
@@ -250,7 +271,7 @@ exports.getListPackage = async function (req, res) {
     }
     let infoMessage = configStr.listPackageInfoMessage;
     if (packageName != null) {
-        infoMessage = utils.str_replace("MSISDN", utils.hideMsisdn(msisdn), utils.str_replace("PACKAGENAME", packageName, infoMessage));
+        infoMessage = Utils.str_replace("MSISDN", Utils.hideMsisdn(msisdn), Utils.str_replace("PACKAGENAME", packageName, infoMessage));
     }
 
     // Neu can hidden noi dung de duyet app iOS
@@ -264,9 +285,9 @@ exports.getListPackage = async function (req, res) {
         return ReS(res, responseObj, 200);
     } else {
 
-        let isConfirm = config.getConfigKey('IS_ON_CONFIRM_SMS_APP', 0);
-        let whiteList = config.getConfigKey('register.whitelist.no.confirm');
-        if (utils.strpos(whiteList.toUpperCase(), source.toUpperCase()) !== false) {
+        let isConfirm = await config.getConfigKey('IS_ON_CONFIRM_SMS_APP', 0);
+        let whiteList = await config.getConfigKey('register.whitelist.no.confirm');
+        if (!Utils.isEmpty(whiteList) && Utils.strpos(whiteList.toUpperCase(), source.toUpperCase()) !== false) {
             isConfirm = 0;
         }
 
@@ -285,30 +306,36 @@ exports.getListPackage = async function (req, res) {
 }
 exports.toggleLikeComment = async function (req, res) {
     //todo
-    let userId = 1;
-    const body = req.body;
+    let user = initUser.auth(req);
+    if (user.responseCode != response.SUCCESS) {
+        return res.json({ responseCode: user.responseCode, message: user.message });
+    }
+    let msisdn = (Utils.isEmpty(user.data)) ? user.data.msisdn : 0;
+    let userId = (Utils.isEmpty(user.data)) ? user.data.userId : '';
+    if (!Utils.isValidMsisdn(msisdn) || Utils.isEmpty(userId)) {
+        return { responseCode: response.FORBIDDEN, message: response.getMessage(response.FORBIDDEN) };
+    }
     let type = req.body.type;
     let commentId = req.body.commentId;
     let contentId = req.body.contentId;
 
-    if (utils.isEmpty(type) == false) {
+    if (Utils.isEmpty(type) == false) {
         type = type.toUpperCase();
     }
-    if (utils.isEmpty(commentId) || utils.isEmpty(contentId) || !validator.isIn(type, configStr.objectType)) {
+    if (Utils.isEmpty(commentId) || Utils.isEmpty(contentId) || !validator.isIn(type, configStr.objectType)) {
         return res.json({ responseCode: response.UNSUCCESS, message: response.getMessage(response.INVALID_PARAM) });
     }
     let isLike = true;
     let favObj = await VnCommentLikeBase.getDetailLike(userId, commentId);
-    console.log(favObj);
     if (favObj) {
-        let res = await VnCommentLikeBase.deleteLike(favObj.id);
+        await VnCommentLikeBase.deleteLike(favObj.id);
         isLike = false;
     } else {
-        let insert = await VnCommentLikeBase.creatCommentLike(userId, commentId, contentId, type);
+        await VnCommentLikeBase.creatCommentLike(userId, commentId, contentId, type);
         isLike = true;
     }
 
-    let up = await VnCommentBase.updateLikeCount(commentId, isLike);
+    await VnCommentBase.updateLikeCount(commentId, isLike);
     return res.json({
         responseCode: response.SUCCESS,
         message: response.getMessage(response.SUCCESS),
@@ -317,40 +344,116 @@ exports.toggleLikeComment = async function (req, res) {
         }
     });
 }
-exports.search = async function (req, res) {
-
-    let responseObj = {
-        responseCode: response.SUCCESS,
-        message: await response.getMessage(response.SUCCESS),
-        data: ""
-
-    };
-    return ReS(res, responseObj, 200);
-}
 exports.searchSuggestion = async function (req, res) {
+    let query = req.query.query;
+    let limit = req.query.limit;
+    let offset = req.query.offset;
+    if (Utils.isEmpty(limit)) {
+        limit = configStr.appSearchFirstPageLimit;
+    }
+    if (Utils.isEmpty(query)) {
+        return res.json({ responseCode: response.UNSUCCESS, message: response.getMessage(response.INVALID_CONTENT_EMPTY) });
+    }
+    if (query.length > 255) {
+        return res.json({ responseCode: response.UNSUCCESS, message: response.getMessage(response.INVALID_CONTENT_SEARCH) });
+    }
+    let searchVideos = await VnVideoSearchBase.search(query, offset, limit);
 
+    let videoSuggestionArr = {
+        name: 'Video',
+        type: 'VOD',
+        content: []
+    };
+
+    if (!Utils.isEmpty(searchVideos) && searchVideos.length > 0) {
+        for (let i = 0; i < searchVideos.length; i++) {
+            let video = searchVideos[i];
+            let suggestion = {};
+            suggestion.id = video['_source']['id'];
+            suggestion.name = Utils.truncateWords((video['_source']['name_original']) ? video['_source']['name_original'] : video['_source']['name'], 65);
+            suggestion.name_original = video['_source']['name_original'] ? video['_source']['name_original'] : video['_source']['name'];
+            suggestion.play_times = video['_source']['play_times'];
+            suggestion.type = 'VOD';
+            suggestion.coverImage = Utils.getThumbUrl(video['_source']['bucket'], video['_source']['path'], obj.SIZE_VIDEO);
+            nameNoSign = Utils.removeSignOnly(suggestion['name']);
+            queryNoSign = Utils.removeSignOnly(query);
+            suggestion.indexOfQuery = Utils.strpos(nameNoSign.toLowerCase(), queryNoSign.toLowerCase()) === false ? 99999 : strpos(nameNoSign.toLowerCase(), queryNoSign.toLowerCase());
+            videoSuggestionArr.content = suggestion;
+        }
+    }
+    if (!Utils.isEmpty(videoSuggestionArr) && !Utils.isEmpty(videoSuggestionArr.content) && videoSuggestionArr.content.length > 0) {
+        Utils.uasort(videoSuggestionArr.content, function (a, b) {
+
+            rs = a['indexOfQuery'] - b['indexOfQuery'];
+
+            rs += b['play_times'] - a['play_times'];
+            return rs;
+        });
+    }
+    videoSuggestionArr.content = Utils.array_values(videoSuggestionArr.content);
+    let channels = await VnUserSearchBase.search(query, offset, limit);
+
+    let channelSuggestionArr = {
+        name: 'Kênh',
+        type: 'CHANNEL',
+        content: []
+    };
+
+    if (!Utils.isEmpty(channels) && channels.length > 0) {
+        for (let i = 0; i < channels.length; i++) {
+            let video = channels[i];
+            suggestion = {};
+            suggestion.id = channel['_source']['id'];
+
+            if (channel['_source']['full_name']) {
+                suggestion.name = channel['_source']['full_name'];
+            } else {
+                suggestion.name = (channel['_source']['name_original']) ? channel['_source']['name_original'] : channel['_source']['name'];
+            }
+
+            suggestion.video_count = channel['_source']['video_count'];
+            suggestion.follow_count = channel['_source']['follow_count'];
+            suggestion.num_video = channel['_source']['video_count'];
+            suggestion.num_follow = channel['_source']['follow_count'];
+
+            suggestion.coverImage = VnHelper.getThumbUrl(channel['_source']['bucket'], channel['_source']['path'], obj.SIZE_VIDEO);
+            suggestion.type = 'CHANNEL';
+            channelSuggestionArr.content = suggestion;
+        }
+    }
     let responseObj = {
         responseCode: response.SUCCESS,
         message: await response.getMessage(response.SUCCESS),
-        data: ""
+        data: [
+            videoSuggestionArr,
+            channelSuggestionArr
+        ]
 
     };
     return ReS(res, responseObj, 200);
 }
 exports.postComment = async function (req, res) {
     //todo
-    let userId = 13;
-    const body = req.body;
+    let user = initUser.auth(req);
+    if (user.responseCode != response.SUCCESS) {
+        return res.json({ responseCode: user.responseCode, message: user.message });
+    }
+    let msisdn = (Utils.isEmpty(user.data)) ? user.data.msisdn : 0;
+    let userId = (Utils.isEmpty(user.data)) ? user.data.userId : '';
+    if (!Utils.isValidMsisdn(msisdn) || Utils.isEmpty(userId)) {
+        return { responseCode: response.FORBIDDEN, message: response.getMessage(response.FORBIDDEN) };
+    }
+
     let type = req.body.type;
     let commentId = req.body.commentId;
     let contentId = req.body.contentId;
     let parentId = req.body.parent_id;
     let comment = req.body.comment;
 
-    if (utils.isEmpty(type) == false) {
+    if (Utils.isEmpty(type) == false) {
         type = type.toUpperCase();
     }
-    if (utils.isEmpty(comment) || !validator.isIn(type, configStr.objectType)) {
+    if (Utils.isEmpty(comment) || !validator.isIn(type, configStr.objectType)) {
         return res.json({ responseCode: response.UNSUCCESS, message: response.getMessage(response.INVALID_DATA) });
     }
 
@@ -359,11 +462,11 @@ exports.postComment = async function (req, res) {
             "MIN%": configStr.commentMinlength,
             "MAX%": configStr.commentMaxlength
         };
-        let msg = utils.replaceBulk(response.getMessage(response.INVALID_LENGTH), utils.array_keys(p), utils.array_values(p));
+        let msg = Utils.replaceBulk(response.getMessage(response.INVALID_LENGTH), Utils.array_keys(p), Utils.array_values(p));
         return res.json({ responseCode: response.UNSUCCESS, message: msg });
 
     }
-    if (utils.isEmpty(commentId) || !validator.isNumeric(contentId) || utils.isEmpty(type) || utils.isEmpty(parentId) || !validator.isNumeric(parentId)) {
+    if (Utils.isEmpty(commentId) || !validator.isNumeric(contentId) || Utils.isEmpty(type) || Utils.isEmpty(parentId) || !validator.isNumeric(parentId)) {
         return res.json({ responseCode: response.UNSUCCESS, message: response.getMessage(response.INVALID_COMMENT) });
     }
     let content = "";
@@ -381,12 +484,11 @@ exports.postComment = async function (req, res) {
             }
             break;
     }
-    if (utils.isEmpty(content)) {
+    if (Utils.isEmpty(content)) {
         return res.json({ responseCode: response.NOT_FOUND, message: response.getMessage(response.INVALID_CONTENT_COMMENT) });
     }
     let vnComment = await VnCommentBase.creatComment(userId, commentId, contentId, type, content, content);
     let vnUser = await VnUserBase.getUserById(userId);
-    console.log(vnUser);
     return res.json({
         responseCode: response.SUCCESS,
         message: response.getMessage(response.SUCCESS),
@@ -400,7 +502,7 @@ exports.postComment = async function (req, res) {
             like_count: 0,
             parent_id: vnComment.parent_id,
             created_at: new Date(),
-            created_at_format: utils.timeElapsedString(vnComment.created_at),
+            created_at_format: Utils.timeElapsedString(vnComment.created_at),
             is_like: false
 
         }
@@ -408,38 +510,39 @@ exports.postComment = async function (req, res) {
 }
 exports.getListComment = async function (req, res) {
     //todo
-    userId = 13;
+    let user = initUser.auth(req);
+    let userId = (user.responseCode == response.SUCCESS && Utils.isEmpty(user.data)) ? user.data.userId : 0;
     let type = req.query.type;
     let contentId = req.query.content_id;
     let limit = req.query.limit;
 
 
-    if (utils.isEmpty(limit)) {
+    if (Utils.isEmpty(limit)) {
         limit = configStr.commentLimit;
     }
 
     let offset = req.query.offset;
     let commentId = req.query.comment_id;
 
-    if (utils.isEmpty(type) == false) {
+    if (Utils.isEmpty(type) == false) {
         type = type.toUpperCase();
     }
-    if (utils.isEmpty(type) || utils.isEmpty(contentId) || !validator.isIn(type, configStr.objectType)) {
+    if (Utils.isEmpty(type) || Utils.isEmpty(contentId) || !validator.isIn(type, configStr.objectType)) {
         return res.json({ responseCode: response.UNSUCCESS, message: response.getMessage(response.INVALID_DATA) });
     }
     let parentComments = [];
     let isLikesArr = [];
-    if (!utils.isEmpty(commentId)) {
+    if (!Utils.isEmpty(commentId)) {
         let contents = await VnCommentBase.getByContentId(userId, type, contentId, limit, offset, commentId);
 
-        if (!utils.isEmpty(userId)) {
+        if (!Utils.isEmpty(userId)) {
             isLikesArr = await VnCommentLikeBase.getLikeIdWithUserId(userId, contentId);
         }
         let comments = CommentObj.serialize(contents, isLikesArr);
         parentComments = comments.content;
     } else {
         let contents = await VnCommentBase.getByContentId(userId, type, contentId, parseInt(limit), parseInt(offset), null);
-        if (!utils.isEmpty(userId)) {
+        if (!Utils.isEmpty(userId)) {
             isLikesArr = await VnCommentLikeBase.getLikeIdWithUserId(userId, contentId);
         }
         let comments = CommentObj.serialize(contents);
@@ -466,15 +569,70 @@ exports.getMoreContent = async function (req, res) {
     let contents = [];
     limit = parseInt(limit);
     offset = parseInt(offset);
+    let user = initUser.auth(req);
+    // if (user.responseCode != response.SUCCESS) {
+    //     return res.json({ responseCode: user.responseCode, message: user.message });
+    // }
+    let msisdn = (user.responseCode == response.SUCCESS && Utils.isEmpty(user.data)) ? user.data.msisdn : 0;
+    let userId = (user.responseCode == response.SUCCESS && Utils.isEmpty(user.data)) ? user.data.userId : 0;;
+    // if (!Utils.isValidMsisdn(msisdn) || Utils.isEmpty(userId)) {
+    //     return { responseCode: response.FORBIDDEN, message: response.getMessage(response.FORBIDDEN) };
+    // }
     //todo
-    let appId = "app-api";
+    let appId = req.headers['app_id'];
     switch (id.toLowerCase()) {
         case obj.VIDEO_HOT_2.toLowerCase():
+            if (Utils.isEmpty(offset)) {
+                limitN = configStr.videoLimitNboxHome;
+
+                //home_video_v2
+                contents = await VideoObj.serialize(
+                    obj.VIDEO_HOT, VnVideoBase.getVideoHomePage(limitN, true), true, obj.getMessage(obj.NEWSFEED), obj.NEWSFEED
+                );
+
+            } else {
+                let idsPage1 = Utils.isEmpty(redisService.getKey("VIDEO_HOMEPAGE_IDS", redis.dbCache)) ? [] : redisService.getKey("VIDEO_HOMEPAGE_IDS", redis.dbCache).split(",");
+                contents = await VideoObj.serialize(
+                    obj.VIDEO_HOT, VnVideoBase.getHotVideoWithOutIds(idsPage1, limit, offset), true
+                );
+            }
+            break;
         case obj.VIDEO_HOT.toLowerCase():
-            let ids = await VnVideoBase.getVideoHomePage(configStr.videoLimitNboxHome, true);
-            // //home_video_v2
-            contents = VideoObj.serialize(
-                obj.HOME_VIDEO_V2, await VnVideoBase.getAllVideo(ids), true, false, obj.NEWSFEED, appId
+            let idsPage1 = Utils.isEmpty(redisService.getKey("VIDEO_HOMEPAGE_IDS", redis.dbCache)) ? [] : redisService.getKey("VIDEO_HOMEPAGE_IDS", redis.dbCache).split(",");
+            contents = await VideoObj.serialize(
+                obj.VIDEO_HOT, VnVideoBase.getHotVideoWithOutIds(idsPage1, limit, offset), true
+            );
+            // let ids = await VnVideoBase.getVideoHomePage(configStr.videoLimitNboxHome, true);
+            // // //home_video_v2
+            // contents = await VideoObj.serialize(
+            //     obj.HOME_VIDEO_V2, await VnVideoBase.getAllVideo(ids), true, false, obj.NEWSFEED, appId
+            // );
+            break;
+        case obj.VIDEO_HOME.toLowerCase():
+            let histories = [];
+            let categoryIds = [];
+            if (userId > 0) {
+                let cacheIds = redisService.getKey("category_list_watch_" + userId, redis.dbCache);
+                cacheIds = Utils.explode(",", cacheIds);
+                categoryIds = Utils.array_filter(cacheIds);
+                // histories = VnHistoryViewBase.getByUser(userId, msisdn, 200, 0, VnHistoryViewBase.TYPE_VOD);
+            }
+
+            if (categoryIds.length < configStr.categoryHotLimit) {
+                let categories = VnGroupCategoryBase.getAllHotCategories(configStr.categoryHotLimit - categoryIds.length, categoryIds);
+                let categoryIds = Utils.array_merge(categoryIds, Utils.arrayColumn(categories, 'id'));
+            }
+            let videoIds = [];
+            if (offset == 0) {
+                let videoHotLimit = configStr.videoHotRandomlimit;
+                videoIds = Utils.arrayColumn(VnVideoHotBase.getByCategoryIds(categoryIds, videoHotLimit, offset), 'video_id');
+                videoIds = Utils.array_diff(videoIds, histories);
+            } else {
+                let videoHotOffset = offset + (configStr.videoHotRandomlimit - limit);
+                videoIds = Utils.arrayColumn(VnVideoHotBase.getByCategoryIds(categoryIds, limit, videoHotOffset), 'video_id');
+            }
+            contents = await VideoObj.serialize(
+                obj.VIDEO_HOME, VnVideoBase.getByIdsQuery(null, videoIds, limit), false
             );
             break;
         case obj.VIDEO_NEW.toLowerCase():
@@ -492,64 +650,102 @@ exports.getMoreContent = async function (req, res) {
 
         case obj.VIDEO_OWNER.toLowerCase():
             //todo
-            let userId = 13;
+            userId = 13;
             contents = VideoObj.serialize(
                 obj.VIDEO_OWNER, await VnVideoBase.getAllVideosByUser('', userId, limit, offset, vnVideoEnum.TYPE_VOD), false, obj.getName(obj.VIDEO_OWNER)
             );
             break;
         case obj.VIDEO_WATCH_LATER.toLowerCase():
             //todo
-            let userId = 13;
+            userId = 13;
 
             break;
         case obj.VIDEO_HISTORY.toLowerCase():
             //todo
-            let userId = 13;
+            userId = 13;
 
             break;
         case obj.VIDEO_CHANNEL_FOLLOW.toLowerCase():
             //todo
-            let userId = 13;
+            userId = 13;
 
             break;
         case obj.LIST_CHANNEL_FOLLOW.toLowerCase():
             //todo
-            let userId = 13;
+            userId = 13;
             contents = ChannelObj.serialize(
                 Obj.CHANNEL_FOLLOW, VnUserFollowBase.getChannelFollowQuery(userId, limit, offset), limit
             );
             break;
         case obj.LIST_CHANNEL_FOLLOW_WITH_HOT.toLowerCase():
             //todo
-            let userId = 13;
+            userId = 13;
 
             break;
         case obj.LIST_HOT_CHANNEL.toLowerCase():
             //todo
-            let userId = 13;
+            userId = 13;
 
             break;
         case obj.MY_PLAYLIST.toLowerCase():
             //todo
-            let userId = 13;
+            userId = 13;
 
             break;
         case obj.HISTORY_SEARCH.toLowerCase():
             //todo
-            let userId = 13;
+            userId = 13;
 
             break;
         case obj.CATEGORY_PARENT.toLowerCase():
             //todo
-            let userId = 13;
+            userId = 13;
 
             break;
         default:
-            if (utils.strpos(id.toLowerCase(), obj.RELATED_OF_VIDEO) === 0) {
+            if (Utils.strpos(id.toLowerCase(), obj.RELATED_OF_VIDEO) === 0) {
 
-            } else if (utils.strpos(id.toLowerCase(), obj.RELATED_OF_VIDEO) === 0) {
+            } else if (Utils.strpos(id.toLowerCase(), obj.VIDEO_OF_PLAYLIST) === 0) {
+
+            } else if (Utils.strpos(id.toLowerCase(), obj.VIDEO_USER_LIKE) === 0) {
+
+            } else if (Utils.strpos(id.toLowerCase(), obj.VIDEO_MOST_VIEW_OF_CHANNEL) === 0) {
+
+            } else if (Utils.strpos(id.toLowerCase(), obj.VIDEO_NEW_OF_CHANNEL) === 0) {
+
+            } else if (Utils.strpos(id.toLowerCase(), obj.VIDEO_NEWEST_CHANNEL) === 0) {
+
+            } else if (Utils.strpos(id.toLowerCase(), obj.PLAYLIST_PUBLIC_OF_USER) === 0) {
+                let userId = Utils.str_replace(obj.PLAYLIST_PUBLIC_OF_USER, '', $id);
+                let isForSmartTv = req.query.is_for_smart_tv.trim();
+
+                if (isForSmartTv) {
+                    contents = UserPlaylistVideoObj.serialize(
+                        id, VnUserPlaylistItemBase.getPlaylistByUserQuery(userId, limit, offset), true, false
+                    );
+                } else {
+                    contents = UserPlaylistObj.serialize(
+                        $id, VnUserPlaylistItemBase.getPlaylistByUserQuery(userId, limit, offset), true, false
+                    );
+                }
+            } else if (Utils.strpos(id.toLowerCase(), obj.CATEGORY_CHILD) === 0) {
+
+            } else if (Utils.strpos(id.toLowerCase(), obj.CATEGORY_CHILD_VIDEO) === 0) {
+
+            } else if (Utils.strpos(id.toLowerCase(), obj.VIDEO_MOST_TRENDING_CATE) === 0) {
+
+            } else if (Utils.strpos(id.toLowerCase(), obj.VIDEO_MOST_VIEW_CATE) === 0) {
+
+            } else if (Utils.strpos(id.toLowerCase(), obj.VIDEO_NEW_CATE) === 0) {
+                let itemId = Utils.str_replace(obj.VIDEO_NEW_CATE + "_", '', id);
+                console.log(itemId);
+
+
+            } else if (Utils.strpos(id.toLowerCase(), obj.VIDEO_OF_CATEGORY) === 0) {
 
             }
+
+
 
     }
 
@@ -561,18 +757,97 @@ exports.getMoreContent = async function (req, res) {
     };
     return ReS(res, responseObj, 200);
 }
+exports.search = async function (req, res) {
+    let query = req.query.query;
+    let limit = req.query.limit;
+    let offset = req.query.offset;
+    if (Utils.isEmpty(limit)) {
+        limit = configStr.appSearchFirstPageLimit;
+    }
+
+    loadLimit = 200;
+    loadOffset = 0;
+    if (Utils.isEmpty(query) || query.length > 255) {
+        return res.json({ responseCode: response.UNSUCCESS, message: response.getMessage(response.INVALID_CONTENT_SEARCH) });
+    }
+
+    let searchVideos = VnVideoSearchBase.search(query, loadOffset, loadLimit);
+    let videoArr = [];
+    if (!Utils.isEmpty(searchVideos) && searchVideos.length > 0) {
+        for (let i = 0; i < searchVideos.length; i++) {
+            let video = searchVideos[i];
+            let suggestion = {};
+            suggestion.id = video['_source']['id'];
+            suggestion.name = Utils.truncateWords((video['_source']['name_original']) ? video['_source']['name_original'] : video['_source']['name'], 65);
+            suggestion.play_times = video['_source']['play_times'];
+            nameNoSign = Utils.removeSignOnly(suggestion['name']);
+            queryNoSign = Utils.removeSignOnly(query);
+            suggestion.indexOfQuery = Utils.strpos(nameNoSign.toLowerCase(), queryNoSign.toLowerCase()) === false ? 99999 : strpos(nameNoSign.toLowerCase(), queryNoSign.toLowerCase());
+            videoArr.push(suggestion);
+        }
+    }
+    if (!Utils.isEmpty(videoArr) && !Utils.isEmpty(videoArr.content) && videoArr.content.length > 0) {
+        Utils.uasort(videoArr, function (a, b) {
+
+            rs = a['indexOfQuery'] - b['indexOfQuery'];
+
+            rs += b['play_times'] - a['play_times'];
+            return rs;
+        });
+    }
+    let dataResponse = [];
+
+    let videoIds = Utils.arrayColumn(videoArr, 'id');
+
+
+
+    searchUsers = VnUserSearchBase.search(query, loadOffset, loadLimit);
+    let userIds = Utils.arrayColumn(searchUsers, '_id');
+    if (userIds.length > 0) {
+        userIds = Utils.array_slice(userIds, offset, limit);
+    }
+    if (!Utils.isEmpty(videoIds)) {
+        let videos = VideoObj.serialize(obj.VIDEO_SEARCH, VnVideoBase.getVideosByIdsQuery(videoIds, limit));
+        if (Utils.isset(videos)) {
+            dataResponse.push(videos);
+        }
+    }
+    if (!Utils.isEmpty(userIds)) {
+        let channels = ChannelObj.serialize(
+            obj.CHANNEL_SEARCH, await VnUserBase.getByIdsQuery(userIds, limit)
+        );
+        if (Utils.isset(channels)) {
+            dataResponse.push(channels);
+        }
+    }
+
+
+
+    let responseObj = {
+        responseCode: response.SUCCESS,
+        message: await response.getMessage(response.SUCCESS),
+        data: dataResponse
+
+    };
+    return ReS(res, responseObj, 200);
+}
 exports.feedBack = async function (req, res) {
-    //todo
-    let msisdn = 84989826271;
-    let userId = 13;
-    const body = req.body;
+    let user = initUser.auth(req);
+    if (user.responseCode != response.SUCCESS) {
+        return res.json({ responseCode: user.responseCode, message: user.message });
+    }
+    let msisdn = (Utils.isEmpty(user.data)) ? user.data.msisdn : 0;
+    let userId = (Utils.isEmpty(user.data)) ? user.data.userId : '';
+    if (!Utils.isValidMsisdn(msisdn) || Utils.isEmpty(userId)) {
+        return { responseCode: response.FORBIDDEN, message: response.getMessage(response.FORBIDDEN) };
+    }
     let id = req.body.id;
     let content = req.body.content;
     let itemId = req.body.item_id;
     let type = req.body.type;
 
-    type = utils.isset(type) ? type.trim() : type;
-    if (utils.isEmpty(type) || !utils.in_array(type, configStr.objectType) || utils.isEmpty(id) || utils.isEmpty(content) || !utils.in_array(id, utils.arrayColumn(params.settingFeedback, 'id'))) {
+    type = Utils.isset(type) ? type.trim() : type;
+    if (Utils.isEmpty(type) || !Utils.in_array(type, configStr.objectType) || Utils.isEmpty(id) || Utils.isEmpty(content) || !Utils.in_array(id, Utils.arrayColumn(params.settingFeedback, 'id'))) {
         return res.json({ responseCode: response.UNSUCCESS, message: response.getMessage(response.INVALID_DATA) });
     }
     if (content.length < configStr.commentMinlength || content.length > configStr.commentMaxlength) {
@@ -580,7 +855,7 @@ exports.feedBack = async function (req, res) {
             "MIN%": configStr.commentMinlength,
             "MAX%": configStr.commentMaxlength
         };
-        let msg = utils.replaceBulk(response.getMessage(response.INVALID_CONTENT_FEEDBACK), utils.array_keys(p), utils.array_values(p));
+        let msg = Utils.replaceBulk(response.getMessage(response.INVALID_CONTENT_FEEDBACK), Utils.array_keys(p), Utils.array_values(p));
         return res.json({ responseCode: response.UNSUCCESS, message: msg });
 
     }
@@ -607,11 +882,103 @@ exports.getFilm = async function (req, res) {
     return ReS(res, responseObj, 200);
 }
 exports.getHomeWeb = async function (req, res) {
+    let dataResponse = [];
+    let limitN = configStr.videoLimitNboxHome;
+    //Lay danh sach video moi
+    let ids = await VnVideoBase.getVideoHomePage(limitN, true);
+    // //home_video_v2
+    videoBox = await VideoObj.serialize(
+        obj.HOME_VIDEO_V2, await VnVideoBase.getAllVideo(ids), true, false, obj.NEWSFEED, appId
+    );
+    if (Utils.isset(videoBox.content) && videoBox.content) {
+        dataResponse.push(videoBox);
+    }
 
+    let newVideo = await VideoObj.serialize(
+        obj.VIDEO_NEW, VnVideoBase.getNewVideo('', configStr.appHomeLimit), true, false
+    );
+    if (Utils.isset(newVideo.content) && newVideo.content) {
+        dataResponse.push(newVideo);
+    }
+    //todo history
+    let limitHotChannel = configStr.appHomeHotchannellimit;
+
+    if (Utils.isEmpty(limitHotChannel)) {
+        limitHotChannel = 5;
+    }
+    let user = initUser.auth(req);
+    let userId = (user.responseCode == response.SUCCESS && Utils.isEmpty(user.data)) ? user.data.userId : 0; //todo msisdn
+    let msisdn = (user.responseCode == response.SUCCESS && Utils.isEmpty(user.data)) ? user.data.msisdn : 0; //todo msisdn
+    var appId = req.headers['app_id'];
+
+    // Danh sach video theo kenh
+    let arrChannel = [];
+    if (userId > 0) {
+
+        let listHotChannel = VnUserBase.getHotUser(limitHotChannel);
+        for (let index = 0; index < listHotChannel.length; index++) {
+            arrChannel.push(listHotChannel[index]);
+
+        }
+    } else {
+        let channelFollows = VnUserFollowBase.getChannelFollowQuery(userId, limitHotChannel);
+        let arrChannelId = [];
+        for (let index = 0; index < channelFollows.length; index++) {
+            let channel = channelFollows[index];
+            arrChannel.push(channel);
+            arrChannelId.push(channel.id);
+        }
+
+        if (channelFollows.length < limitHotChannel) {
+            let listHotChannel = VnUserBase.getHotUser(limitHotChannel);
+
+            arrChannel = Utils.mergeById(arrChannel, listHotChannel, 'id', limitHotChannel);
+        }
+    }
+
+    if (arrChannel.length > 0) {
+        let alreadyAdd = [];
+        // Voi moi kenh lay duoc, hien thi danh sach video moi nhat
+        for (let i = 0; i < arrChannel.length; i++) {
+            if (!Utils.in_array(arrChannel[i]['id'], alreadyAdd)) {
+                alreadyAdd.push(arrChannel[i]['id']);
+                let newestVideos = await VideoObj.serialize(
+                    obj.VIDEO_NEWEST_CHANNEL + arrChannel[i]['id'], VnVideoBase.getVideosByChannel(arrChannel[i]['id'], configStr.appHomeLimit, 0, 'NEW'), false, arrChannel[i]['full_name']
+                );
+
+                if (Utils.isset(newestVideos['content']) && newestVideos['content']) {
+                    dataResponse.push(newestVideos);
+                }
+            }
+        }
+    }
+    //Lay anh banner
+    let bannerArr = VnSlideshowBase.getSlideShowByLocation("HOME", configStr.slideshowHomeLimit);
+
+    let bannerList = [];
+
+    if (!Utils.isEmpty(bannerArr)) {
+        for (let index = 0; index < bannerArr.length; index++) {
+            const banner = bannerArr[index];
+            bannerArr.push(
+                {
+                    image: VnHelper.getThumbUrl(banner.bucket, banner.path),
+                    link: banner.href,
+                    type: banner.type,
+                    item_id: banner.item_id
+                }
+
+            );
+        }
+
+
+    }
     let responseObj = {
         responseCode: response.SUCCESS,
         message: await response.getMessage(response.SUCCESS),
-        data: ""
+        data: dataResponse,
+        popup: VnFlow.loadPromotionPopup(msisdn),
+        banner: bannerList
 
     };
     return ReS(res, responseObj, 200);
@@ -632,14 +999,4 @@ exports.getKeywords = async function (req, res) {
     };
     return ReS(res, responseObj, 200);
 }
-checkHiddenContent = async function (osType, osVersionCode) {
-    let hiddenPackage = false;
-    if (osVersionCode && osType) {
-        osType = osType.toUpperCase();
-        if (osType == 'IOS' && vc.gte(osVersionCode, await config.getConfigKey("VERSION_APP_" + osType), 0) == true) {
-            hiddenPackage = true;
-        }
 
-    }
-    return hiddenPackage;
-}

@@ -10,7 +10,9 @@ VnUser.hasMany(VnUserFollow, {foreignKey : 'id', as : 'uf'})
 exports.VnUserFollow = VnUserFollow;
 exports.VnUser = VnUser;
 
-getFollowUser = function(userId, limit = 10, offset = 0, status){
+const ACTIVE =1;
+
+getFollowUser = function(userId, limit = 10, offset = 0){
 
 	return new Promise(function(resolve, reject){
 		let where = {};
@@ -22,7 +24,7 @@ getFollowUser = function(userId, limit = 10, offset = 0, status){
     		include:{
     			model: VnUser, as: 'u',
     			where: {
-					status: status
+					status: ACTIVE
     			},
            		required:false,
 				attributes: ['full_name','bucket','id','path','msisdn'],

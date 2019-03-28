@@ -1,0 +1,1063 @@
+---
+swagger: '2.0'
+info:
+  description: "This is documentatin for the Node API. For every request you must
+    include in the header: \n Content-Type: application/json \n\n For protected routes
+    by authorization we use JWT. Each of these have a lock by them. Must include a
+    Bearer Token in the header \n Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ..."
+  version: 1.0.0
+  title: Rest Node API for My Video
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: le.hoang@live.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+host: localhost:3000
+basePath: "/v1"
+tags:
+  - name: default
+    description: trang default
+  - name: playlist
+    description: trang playlist
+  - name: channel
+    description: trang channel
+  - name: video
+    description: trang video
+  - name: user
+    description: Authentication and More
+    externalDocs:
+      description: Find out more
+      url: http://orangetech.io
+  - name: app
+    description: creation and app management
+schemes:
+  - http
+  - https
+paths:
+  "/default/search-suggestion":
+    get:
+      tags:
+        - default
+      summary: default get search suggestion
+      description: default get search suggestion
+      produces:
+        - application/json
+      parameters:
+        - name: query
+          in: path
+          description: "search"
+          required: true
+          type: string
+        - name: limit
+          in: path
+          required: true
+          type: number
+        - name: offset
+          in: path
+          required: true
+          type: number
+      responses:
+        '200':
+          description: "search suggestion"
+          schema:
+            "$ref": "#/definitions/defaultSearchSuggestion"
+  "/default/search":
+    get:
+      tags:
+        - default
+      summary: default get search
+      description: default get search
+      produces:
+        - application/json
+      parameters:
+        - name: query
+          in: path
+          description: "search"
+          required: true
+          type: string
+        - name: limit
+          in: path
+          required: true
+          type: number
+        - name: offset
+          in: path
+          required: true
+          type: number
+      responses:
+        '200':
+          description: "data: [data1] du lieu la video, [data2] du lieu la channel"
+          schema:
+            "$ref": "#/definitions/defaultSearch"
+  "/default/list-package":
+    post:
+      tags:
+        - default
+      summary: default get home
+      description: default get home
+      produces:
+        - application/json
+      parameters:
+        - name: app_ip
+          in: path
+          description: "app id"
+          required: true
+          type: string
+        - name: token
+          in: path
+          description: "token"
+          required: true
+          type: string
+        - name: os_version_code
+          in: path
+          description: "os_version_code"
+          required: true
+          type: string
+        - name: os_type
+          in: path
+          description: "os_type"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            "$ref": "#/definitions/defaultListPackage"
+  "/default/get-home":
+    post:
+      tags:
+        - default
+      summary: default get home
+      description: default get home
+      produces:
+        - application/json
+      parameters:
+        - name: app_ip
+          in: path
+          description: "app id"
+          required: true
+          type: string
+        - name: token
+          in: path
+          description: "token"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            "$ref": "#/definitions/defaultGetHome"
+  "/default/get-setting":
+    post:
+      tags:
+        - default
+      summary: default get setting
+      description: default get setting
+      produces:
+        - application/json
+      parameters:
+        - name: app_ip
+          in: path
+          description: "app id"
+          required: true
+          type: string
+        - name: token
+          in: path
+          description: "token"
+          required: true
+          type: string
+        - name: os_version_code
+          in: path
+          description: "os_version_code"
+          required: true
+          type: string
+        - name: os_type
+          in: path
+          description: "os_type"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            "$ref": "#/definitions/defaultGetSetting"
+  "/apps":
+    post:
+      tags:
+        - app
+      summary: Creates App
+      description: Creates a record of an App in our database
+      operationId: getInventory
+      produces:
+        - application/json
+      parameters: []
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: object
+            additionalProperties:
+              type: integer
+              format: int32
+        '401':
+          description: unauthorized
+          schema:
+            "$ref": "#/definitions/ApiUnauthorizezdResponse"
+      security:
+        - api_key: []
+  "/apps/{app_id}":
+    get:
+      tags:
+        - app
+      summary: Return App
+      description: Returns information about App
+      produces:
+        - application/json
+      parameters:
+        - name: app_id
+          in: path
+          description: name that need to be updated
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: Updated user object
+          required: true
+          schema:
+            "$ref": "#/definitions/CreateUser"
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            "$ref": "#/definitions/CreateUser"
+        '400':
+          description: Invalid Order
+        '401':
+          description: unauthorized
+          schema:
+            "$ref": "#/definitions/ApiUnauthorizezdResponse"
+      security:
+        - api_key: []
+    put:
+      tags:
+        - app
+      summary: Update app
+      description: Update App information
+      produces:
+        - application/json
+      parameters:
+        - name: app_id
+          in: path
+          description: name that need to be updated
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: Updated user object
+          required: true
+          schema:
+            "$ref": "#/definitions/CreateUser"
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            "$ref": "#/definitions/CreateUser"
+        '400':
+          description: Invalid Order
+        '401':
+          description: unauthorized
+          schema:
+            "$ref": "#/definitions/ApiUnauthorizezdResponse"
+      security:
+        - api_key: []
+    delete:
+      tags:
+        - app
+      summary: Soft delete app
+      description: soft delete app
+      produces:
+        - application/json
+      parameters:
+        - name: app_id
+          in: path
+          description: name that need to be updated
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: Updated user object
+          required: true
+          schema:
+            "$ref": "#/definitions/CreateUser"
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            "$ref": "#/definitions/CreateUser"
+        '400':
+          description: Invalid Order
+        '401':
+          description: unauthorized
+          schema:
+            "$ref": "#/definitions/ApiUnauthorizezdResponse"
+      security:
+        - api_key: []
+  "/apps/{app_id}/hard":
+    delete:
+      tags:
+        - app
+      summary: Hard delete app
+      description: All app information will be removed from database
+      produces:
+        - application/json
+      parameters:
+        - name: app_id
+          in: path
+          description: name that need to be updated
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: Updated user object
+          required: true
+          schema:
+            "$ref": "#/definitions/CreateUser"
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            "$ref": "#/definitions/CreateUser"
+        '400':
+          description: Invalid Order
+        '401':
+          description: unauthorized
+          schema:
+            "$ref": "#/definitions/ApiUnauthorizezdResponse"
+      security:
+        - api_key: []
+  "/apps/{app_id}/restore":
+    put:
+      tags:
+        - app
+      summary: Restores soft deleted app
+      description: All app information will be removed from database
+      produces:
+        - application/json
+      parameters:
+        - name: app_id
+          in: path
+          description: name that need to be updated
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: Updated user object
+          required: true
+          schema:
+            "$ref": "#/definitions/CreateUser"
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            "$ref": "#/definitions/CreateUser"
+        '400':
+          description: Invalid Order
+        '401':
+          description: unauthorized
+          schema:
+            "$ref": "#/definitions/ApiUnauthorizezdResponse"
+      security:
+        - api_key: []
+  "/users":
+    post:
+      tags:
+        - user
+      summary: Create user
+      description: Creates user that can now be used for authentication
+      operationId: createUser
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: Creates user
+          required: true
+          schema:
+            "$ref": "#/definitions/CreateUser"
+      responses:
+        '201':
+          description: successful operation
+          schema:
+            "$ref": "#/definitions/CreateUserResponse"
+        '422':
+          description: Invalid operation
+          schema:
+            "$ref": "#/definitions/ApiErrorResponse"
+    get:
+      tags:
+        - user
+      summary: Return user
+      description: This can only be done by the logged in user.
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            "$ref": "#/definitions/ReturnUserResponse"
+        '401':
+          description: unauthorized
+          schema:
+            "$ref": "#/definitions/ApiUnauthorizezdResponse"
+      security:
+        - api_key: []
+    put:
+      tags:
+        - user
+      summary: Update user
+      description: This can only be done by the logged in user.
+      parameters:
+        - in: body
+          name: body
+          description: Creates user
+          required: true
+          schema:
+            "$ref": "#/definitions/UpdateUserBody"
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: successful request
+          schema:
+            "$ref": "#/definitions/ApiSuccessResponse"
+        '401':
+          description: unauthorized
+          schema:
+            "$ref": "#/definitions/ApiUnauthorizezdResponse"
+      security:
+        - api_key: []
+    delete:
+      tags:
+        - user
+      summary: Soft delete user
+      description: This can only be done by the logged in user.
+      produces:
+        - application/json
+      responses:
+        '204':
+          description: success
+          schema:
+            "$ref": "#/definitions/ApiSuccessResponse"
+        '401':
+          description: unauthorized
+          schema:
+            "$ref": "#/definitions/ApiUnauthorizezdResponse"
+        default:
+          description: successful operation
+      security:
+        - api_key: []
+  "/users/hard":
+    delete:
+      tags:
+        - user
+      summary: Hard delete user
+      description: Remove user from database
+      produces:
+        - application/json
+      responses:
+        '204':
+          description: success
+          schema:
+            "$ref": "#/definitions/ApiSuccessResponse"
+        '401':
+          description: unauthorized
+          schema:
+            "$ref": "#/definitions/ApiUnauthorizezdResponse"
+        default:
+          description: successful operation
+      security:
+        - api_key: []
+  "/users/restore":
+    put:
+      tags:
+        - user
+      summary: Restore soft deleted user
+      description: ''
+      produces:
+        - application/json
+      responses:
+        '204':
+          description: success
+          schema:
+            "$ref": "#/definitions/ApiSuccessResponse"
+        '401':
+          description: unauthorized
+          schema:
+            "$ref": "#/definitions/ApiUnauthorizezdResponse"
+        default:
+          description: successful operation
+      security:
+        - api_key: []
+  "/users/login":
+    post:
+      tags:
+        - user
+      summary: User Login
+      description: Returns Bearer Token for JWT authentication
+      operationId: createUsersWithArrayInput
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: List of user object
+          required: true
+          schema:
+            type: array
+            items:
+              "$ref": "#/definitions/CreateUser"
+      responses:
+        '204':
+          description: success
+          schema:
+            "$ref": "#/definitions/LoginUserResponse"
+        '422':
+          description: error
+          schema:
+            "$ref": "#/definitions/ApiErrorResponse"
+securityDefinitions:
+  bearer_auth:
+    type: oauth2
+    authorizationUrl: http://localhost:3000/v1/user/login
+    flow: implicit
+  api_key:
+    type: apiKey
+    name: api_key
+    in: header
+definitions:
+  CreateUser:
+    type: object
+    properties:
+      unique_key | email | phone:
+        type: string
+        example: '8885678345'
+      password:
+        type: string
+        example: secure-password
+      data:
+        type: array
+        items:
+          - properties:
+            type: object
+              name:
+                type: string
+          - properties:
+            type: object
+              name:
+                type: string
+  CreateUserResponse:
+    type: object
+    properties:
+      success:
+        type: boolean
+        example: true
+      message:
+        type: string
+        example: Successfully created new user.
+      token:
+        type: string
+        example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ...
+        description: Authentication token
+  LoginUserResponse:
+    type: object
+    properties:
+      success:
+        type: boolean
+        example: true
+      token:
+        type: string
+        example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ...
+        description: Authentication token
+  ReturnUserResponse:
+    type: object
+    properties:
+      success:
+        type: boolean
+        example: true
+      user:
+        type: object
+        properties:
+          first:
+            type: string
+            example: John
+          last:
+            type: string
+            example: doe
+          email:
+            type: string
+            example: john.doe@gmail.com
+          phone:
+            type: string
+            example: '8889401234'
+          apps:
+            type: array
+            items:
+              type: object
+              properties:
+                _id:
+                  type: string
+                  example: 12chd73nsjuf
+                url:
+                  type: string
+                  example: www.orangetech.io
+  UpdateUserBody:
+    type: object
+    properties:
+      first:
+        type: string
+        example: John
+      last:
+        type: string
+        example: doe
+      email:
+        type: string
+        example: john.doe@gmail.com
+      phone:
+        type: string
+        example: '8889401234'
+  ApiErrorResponse:
+    type: object
+    properties:
+      success:
+        type: boolean
+        example: false
+      error:
+        type: string
+  ApiSuccessResponse:
+    type: object
+    properties:
+      success:
+        type: boolean
+        example: true
+      message:
+        type: string
+  ApiUnauthorizezdResponse:
+    type: string
+    example: Unauthorized
+  ApiResponse:
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int32
+      type:
+        type: string
+      message:
+        type: string
+  defaultSearchSuggestion:
+    type: object
+    properties:
+      responseCode:
+        type: integer
+        format: int32
+      message:
+        type: string
+      data:
+        description: search suggestion
+        type: array
+        items:
+          properties:
+            1:
+              type: object
+              properties:
+                name:
+                  type: string
+                type:
+                  type: string
+                content:
+                  type: array
+                  items:
+                    properties:
+                      id:
+                        type: number
+                        example: 12
+                      name:
+                        type: string
+                        example: www.orangetech.io
+                      name_original:
+                        type: string
+                        example: www.orangetech.io
+                      play_times:
+                        type: string
+                        example: www.orangetech.io
+                      type:
+                        type: string
+                        example: www.orangetech.io
+                      coverImage:
+                        type: string
+                        example: www.orangetech.io
+                      indexOfQuery:
+                        type: string
+                        example: www.orangetech.io
+            2:
+              type: object
+              properties:
+                name:
+                  type: string
+                type:
+                  type: string
+                content:
+                  type: array
+                  items:
+                    properties:
+                      id:
+                        type: number
+                        example: 12
+                      name:
+                        type: string
+                        example: www.orangetech.io
+                      video_count:
+                        type: string
+                        example: www.orangetech.io
+                      follow_count:
+                        type: string
+                        example: www.orangetech.io
+                      num_video:
+                        type: string
+                        example: www.orangetech.io
+                      num_follow:
+                        type: string
+                        example: www.orangetech.io
+                      coverImage:
+                        type: string
+                        example: www.orangetech.io
+                      type:
+                        type: string
+                        example: www.orangetech.io
+  defaultSearch:
+    type: object
+    properties:
+      responseCode:
+        type: integer
+        format: int32
+      message:
+        type: string
+      data:
+        type: array
+        description: search suggestion
+        items:
+          properties:
+            1:
+              type: object
+              properties:
+                id:
+                  type: number
+                name:
+                  type: string
+                type:
+                  type: string
+                content:
+                  type: array
+                  items:
+                    properties:
+                      id:
+                        type: number
+                        example: 12
+                      name:
+                        type: string
+                        example: www.orangetech.io
+                      fullName:
+                        type: string
+                        example: www.orangetech.io
+                      description:
+                        type: string
+                        example: www.orangetech.io
+                      coverImage:
+                        type: string
+                        example: www.orangetech.io
+                      animationImage:
+                        type: string
+                        example: www.orangetech.io
+                      type:
+                        type: string
+                        example: www.orangetech.io
+                      duration:
+                        type: string
+                        example: www.orangetech.io
+                      play_times:
+                        type: string
+                        example: www.orangetech.io
+                      publishedTime:
+                        type: string
+                        example: www.orangetech.io
+                      status:
+                        type: string
+                        example: www.orangetech.io
+                      reason:
+                        type: string
+                        example: www.orangetech.io
+                      link:
+                        type: string
+                        example: www.orangetech.io
+                      inkSocial:
+                        type: string
+                        example: www.orangetech.io
+                      userAvatarImage:
+                        type: string
+                        example: www.orangetech.io
+                      user_id:
+                        type: string
+                        example: www.orangetech.io
+                      fullUserName:
+                        type: string
+                        example: www.orangetech.io
+                      userName:
+                        type: string
+                        example: www.orangetech.io
+                      msisdn:
+                        type: string
+                        example: www.orangetech.io
+            2:
+              description: voi du lieu la channel
+              type: object
+              properties:
+                id:
+                  type: number
+                  example: 12
+                name:
+                  type: string
+                  example: www.orangetech.io
+                type:
+                  type: string
+                  example: www.orangetech.io
+                content:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      channel_id:
+                        type: number
+                        example: 12
+                      channel_name:
+                        type: string
+                        example: 12
+                      channel_name_mini:
+                        type: string
+                        example: 12
+                      avatarImage:
+                        type: string
+                        example: 12
+                      avatarImageH:
+                        type: string
+                        example: 12
+                      coverImage:
+                        type: string
+                        example: 12
+                      num_follow:
+                        type: string
+                        example: 12
+                      num_video:
+                        type: string
+                        example: 12
+                      description:
+                        type: string
+                        example: 12
+                      isFollow:
+                        type: string
+                        example: 12
+  defaultListPackage:
+    type: object
+    properties:
+      responseCode:
+        type: integer
+        format: int32
+      message:
+        type: string
+      isConfirmSMS:
+        type: string
+      is_confirm_sms:
+        type: string
+      data:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: number
+              example: 12
+            name:
+              type: string
+              example: name
+            fee:
+              type: number
+              example: 12
+            short_description:
+              type: string
+              example: name
+            description:
+              type: string
+              example: name
+            cycle:
+              type: string
+              example: name
+            status:
+              type: number
+              example: 1
+            popup:
+              type: string
+              example: name
+  defaultGetSetting:
+    type: object
+    properties:
+      responseCode:
+        type: integer
+        format: int32
+      message:
+        type: string
+      data:
+        type: object
+        properties:
+          isOnGame:
+            type: string
+            example: 12
+          event:
+            type: string
+            example: 12
+          isOnEventIphoneX:
+            type: string
+            example: 12
+          feedBack:
+            type: string
+            example: 12
+          categories:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: number
+                  example: 12
+                name:
+                  type: string
+                  example: 12
+                type:
+                  type: string
+                  example: 12
+                filter_type:
+                  type: string
+                  example: 12
+                getMoreContentId:
+                  type: number
+                  example: 12
+          acceptLostDataTimeout:
+            type: string
+            example: 12
+          quality:
+            type: string
+            example: 12
+          htmlContent:
+            type: array
+            items:
+              type: object
+              properties:
+                type:
+                  type: string
+                  example: term-condition
+                content:
+                  type: string
+                  example: term-condition
+
+  defaultGetHome:
+    type: object
+    properties:
+      responseCode:
+        type: integer
+        format: int32
+      message:
+        type: string
+      popup:
+        type: object
+        properties:
+          popupId:
+            type: string
+            example: 12chd73nsjuf
+          popupMessage:
+            type: string
+            example: 12chd73nsjuf
+      data:
+        type: object
+        properties:
+          id:
+            type: number
+            example: 12
+          name:
+            type: string
+            example: 12chd73nsjuf
+          type:
+            type: string
+            example: 12chd73nsjuf
+          content:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: number
+                  example: 12
+                name:
+                  type: string
+                  example: www.orangetech.io
+                fullName:
+                  type: string
+                  example: www.orangetech.io
+                description:
+                  type: string
+                  example: www.orangetech.io
+                coverImage:
+                  type: string
+                  example: www.orangetech.io
+                animationImage:
+                  type: string
+                  example: www.orangetech.io
+                type:
+                  type: string
+                  example: www.orangetech.io
+                duration:
+                  type: string
+                  example: www.orangetech.io
+                play_times:
+                  type: string
+                  example: www.orangetech.io
+                publishedTime:
+                  type: string
+                  example: www.orangetech.io
+                status:
+                  type: string
+                  example: www.orangetech.io
+                reason:
+                  type: string
+                  example: www.orangetech.io
+                link:
+                  type: string
+                  example: www.orangetech.io
+                inkSocial:
+                  type: string
+                  example: www.orangetech.io
+                userAvatarImage:
+                  type: string
+                  example: www.orangetech.io
+                user_id:
+                  type: string
+                  example: www.orangetech.io
+                fullUserName:
+                  type: string
+                  example: www.orangetech.io
+                userName:
+                  type: string
+                  example: www.orangetech.io
+                msisdn:
+                  type: string
+                  example: www.orangetech.io
+externalDocs:
+  description: Find out more about Orange Tech
+  url: http://orangetech.io
