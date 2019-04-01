@@ -103,25 +103,10 @@ exports.getByIdsQuery = async function (ids, limit = 10, offset = null) {
 
 }
 exports.getByMsisdn = async function (msisdn) {
-    return new Promise(function (resolve, reject) {
-        let where = {
+    let  where = {
             msisdn: msisdn
         };
-        VnUser.findOne({
-            where: where,
-            raw: true
-        }).then(function (obj) {
-            if (obj != null) {
-                resolve(obj);
-            } else {
-                resolve(null);
-            }
-
-        }).catch(function (err) {
-            console.log(err);
-            resolve(null);
-        });
-    });
+    return await this.getUserByQueryOne(query, "getHotUser");
 }
 exports.getByMsisdnOrEmail = async function (msisdn, username) {
     let where = {
@@ -195,5 +180,13 @@ exports.update = function (update, where) {
             console.log('update', err);
             resolve(false);
         });
+    });
+}
+
+exports.getById = function (id) {
+    return VnUser.findOne({
+        where:{
+            id: id
+        }
     });
 }

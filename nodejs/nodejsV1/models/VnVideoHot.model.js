@@ -21,6 +21,7 @@ exports.getByCategoryIds = function (categoryIds, limit = 10, offset = null) {
 
 }
 
+
 exports.getFindAllQuery = function (query, func = "getFindAllQuery") {
     return new Promise(async function (resolve, reject) {
         query.raw = true;

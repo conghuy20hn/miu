@@ -15,6 +15,7 @@ module.exports = {
     VIDEO_NEWSFEED: 'video_newsfeed',
     VIDEO_NEW: 'video_new',
     VIDEO_HOT: 'video_hot',
+    VIDEO_HOME: 'video_home',
     VIDEO_HISTORY: 'video_history',
     VIDEO_RECOMMEND: 'video_recommend',
     VIDEO_FREE: 'video_free',

@@ -14,9 +14,11 @@ serialize = async function (id, query, cache = false, name = null, type = null, 
     let key = md5(id + "_" + appId + "_" + JSON.stringify(query));
     let contents = [];
     if (params.configStr.cache_enabled == true && cache == true) {
+        console.log('new ins 1');
         contents = await redisService.getKey(key, dbredis.constant.dbCache);
         if (Utils.isEmpty(contents)) {
             contents = await VnVideoBase.getVideosFindAllQuery(query);
+   
 
             redisService.setKey(key, JSON.stringify(contents), redis.CACHE_10MINUTE, redis.dbCache);
         } else {
@@ -25,13 +27,15 @@ serialize = async function (id, query, cache = false, name = null, type = null, 
         }
     } else {
         contents = await VnVideoBase.getVideosFindAllQuery(query);
+        console.log(contents);
     }
+    console.log('new ins 3');
     let items = [];
 
     if (!Utils.isEmpty(contents) && contents.length > 0) {
         for (let i = 0; i < contents.length; i++) {
             let content = contents[i];
-            let objUser = content.u;
+            let objUser = Utils.isEmpty(content.u) ? content.u :null;
             let item = {};
             item.id = content.id;
             if (id == Obj.VIDEO_SEARCH) {

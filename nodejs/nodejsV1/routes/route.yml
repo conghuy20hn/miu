@@ -16,8 +16,8 @@ info:
 host: localhost:3000
 basePath: "/v1"
 tags:
-  - name: default
-    description: trang default
+  - name: common
+    description: trang common
   - name: playlist
     description: trang playlist
   - name: channel
@@ -35,10 +35,179 @@ schemes:
   - http
   - https
 paths:
-  "/default/search-suggestion":
+  "/common/get-list-comment":
     get:
       tags:
-        - default
+        - common
+      summary: default get keywords
+      description: default get keywords
+      produces:
+        - application/json
+      parameters:
+        - name: type
+          in: path
+          description: "type"
+          required: true
+          type: string
+        - name: content_id
+          in: path
+          description: "type"
+          required: true
+          type: number
+        - name: comment_id
+          in: path
+          description: "type"
+          required: true
+          type: number
+        - name: limit
+          in: path
+          description: "type"
+          required: true
+          type: number
+        - name: offset
+          in: path
+          description: "type"
+          required: true
+          type: number
+      responses:
+        '200':
+          description: "search suggestion"
+          schema:
+            "$ref": "#/definitions/defaultGetListComment"
+  "/common/get-home-web":
+    get:
+      tags:
+        - common
+      summary: default get keywords
+      description: default get keywords
+      produces:
+        - application/json
+      parameters:
+        - name: app_id
+          in: path
+          description: "type"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: "search suggestion"
+          schema:
+            "$ref": "#/definitions/defaultGetHomeWeb"
+  "/common/feed-back":
+    post:
+      tags:
+        - common
+      summary: default get keywords
+      description: default get keywords
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          in: path
+          description: "type"
+          required: true
+          type: string
+        - name: content
+          in: path
+          description: "type"
+          required: true
+          type: number
+        - name: item_id
+          in: path
+          description: "type"
+          required: true
+          type: number
+        - name: type
+          in: path
+          description: "type"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: "search suggestion"
+          schema:
+            "$ref": "#/definitions/defaultFeedBack"
+  "/common/post-comment":
+    post:
+      tags:
+        - common
+      summary: default get keywords
+      description: default get keywords
+      produces:
+        - application/json
+      parameters:
+        - name: type
+          in: path
+          description: "type"
+          required: true
+          type: string
+        - name: contentId
+          in: path
+          description: "type"
+          required: true
+          type: number
+        - name: parent_id
+          in: path
+          description: "type"
+          required: true
+          type: number
+        - name: comment
+          in: path
+          description: "type"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: "search suggestion"
+          schema:
+            "$ref": "#/definitions/defaultPostComment"
+  "/common/toggle-like-comment":
+    post:
+      tags:
+        - common
+      summary: default get keywords
+      description: default get keywords
+      produces:
+        - application/json
+      parameters:
+        - name: type
+          in: path
+          description: "type"
+          required: true
+          type: string
+        - name: contentId
+          in: path
+          description: "type"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: "search suggestion"
+          schema:
+            "$ref": "#/definitions/defaultToggleLikeComment"
+  "/common/get-keywords":
+    get:
+      tags:
+        - common
+      summary: default get keywords
+      description: default get keywords
+      produces:
+        - application/json
+      parameters:
+        - name: limit
+          in: path
+          description: "search"
+          required: true
+          type: string
+      responses:
+        '200':
+          description: "search suggestion"
+          schema:
+            "$ref": "#/definitions/defaultGetKeyword"
+  "/common/search-suggestion":
+    get:
+      tags:
+        - common
       summary: default get search suggestion
       description: default get search suggestion
       produces:
@@ -62,10 +231,10 @@ paths:
           description: "search suggestion"
           schema:
             "$ref": "#/definitions/defaultSearchSuggestion"
-  "/default/search":
+  "/common/search":
     get:
       tags:
-        - default
+        - common
       summary: default get search
       description: default get search
       produces:
@@ -89,10 +258,10 @@ paths:
           description: "data: [data1] du lieu la video, [data2] du lieu la channel"
           schema:
             "$ref": "#/definitions/defaultSearch"
-  "/default/list-package":
+  "/common/list-package":
     post:
       tags:
-        - default
+        - common
       summary: default get home
       description: default get home
       produces:
@@ -123,10 +292,10 @@ paths:
           description: successful operation
           schema:
             "$ref": "#/definitions/defaultListPackage"
-  "/default/get-home":
+  "/common/get-home":
     post:
       tags:
-        - default
+        - common
       summary: default get home
       description: default get home
       produces:
@@ -147,10 +316,10 @@ paths:
           description: successful operation
           schema:
             "$ref": "#/definitions/defaultGetHome"
-  "/default/get-setting":
+  "/common/get-setting":
     post:
       tags:
-        - default
+        - common
       summary: default get setting
       description: default get setting
       produces:
@@ -544,17 +713,6 @@ definitions:
       password:
         type: string
         example: secure-password
-      data:
-        type: array
-        items:
-          - properties:
-            type: object
-              name:
-                type: string
-          - properties:
-            type: object
-              name:
-                type: string
   CreateUserResponse:
     type: object
     properties:
@@ -662,78 +820,86 @@ definitions:
         format: int32
       message:
         type: string
-      data:
+      data1:
         description: search suggestion
         type: array
         items:
+          type: object
           properties:
-            1:
-              type: object
+            name:
+              type: string
+            type:
+              type: string
+            content:
+              type: array
+              items:
+                properties:
+                  id:
+                    type: number
+                    example: 12
+                  name:
+                    type: string
+                    example: www.orangetech.io
+                  name_original:
+                    type: string
+                    example: www.orangetech.io
+                    description: du lieu video
+                  play_times:
+                    type: string
+                    example: www.orangetech.io
+                    description: du lieu video
+                  type:
+                    type: string
+                    example: www.orangetech.io
+                  coverImage:
+                    type: string
+                    example: www.orangetech.io
+                    description: du lieu video
+                  indexOfQuery:
+                    type: string
+                    example: www.orangetech.io
+                    description: du lieu video
+      data2:
+        description: search suggestion
+        type: object
+        properties:
+          name:
+            type: string
+          type:
+            type: string
+          content:
+            type: array
+            items:
               properties:
+                id:
+                  type: number
+                  example: 12
                 name:
                   type: string
+                  example: www.orangetech.io
+                video_count:
+                  type: string
+                  example: www.orangetech.io
+                  description: du lieu channel
+                follow_count:
+                  type: string
+                  example: www.orangetech.io
+                  description: du lieu channel
+                num_video:
+                  type: string
+                  example: www.orangetech.io
+                  description: du lieu channel
+                num_follow:
+                  type: string
+                  example: www.orangetech.io
+                  description: du lieu channel
+                coverImage:
+                  type: string
+                  example: www.orangetech.io
+                  description: du lieu channel
                 type:
                   type: string
-                content:
-                  type: array
-                  items:
-                    properties:
-                      id:
-                        type: number
-                        example: 12
-                      name:
-                        type: string
-                        example: www.orangetech.io
-                      name_original:
-                        type: string
-                        example: www.orangetech.io
-                      play_times:
-                        type: string
-                        example: www.orangetech.io
-                      type:
-                        type: string
-                        example: www.orangetech.io
-                      coverImage:
-                        type: string
-                        example: www.orangetech.io
-                      indexOfQuery:
-                        type: string
-                        example: www.orangetech.io
-            2:
-              type: object
-              properties:
-                name:
-                  type: string
-                type:
-                  type: string
-                content:
-                  type: array
-                  items:
-                    properties:
-                      id:
-                        type: number
-                        example: 12
-                      name:
-                        type: string
-                        example: www.orangetech.io
-                      video_count:
-                        type: string
-                        example: www.orangetech.io
-                      follow_count:
-                        type: string
-                        example: www.orangetech.io
-                      num_video:
-                        type: string
-                        example: www.orangetech.io
-                      num_follow:
-                        type: string
-                        example: www.orangetech.io
-                      coverImage:
-                        type: string
-                        example: www.orangetech.io
-                      type:
-                        type: string
-                        example: www.orangetech.io
+                  example: www.orangetech.io
   defaultSearch:
     type: object
     properties:
@@ -742,129 +908,72 @@ definitions:
         format: int32
       message:
         type: string
-      data:
+      data1:
         type: array
         description: search suggestion
         items:
+          type: object
           properties:
-            1:
-              type: object
-              properties:
-                id:
-                  type: number
-                name:
-                  type: string
-                type:
-                  type: string
-                content:
-                  type: array
-                  items:
-                    properties:
-                      id:
-                        type: number
-                        example: 12
-                      name:
-                        type: string
-                        example: www.orangetech.io
-                      fullName:
-                        type: string
-                        example: www.orangetech.io
-                      description:
-                        type: string
-                        example: www.orangetech.io
-                      coverImage:
-                        type: string
-                        example: www.orangetech.io
-                      animationImage:
-                        type: string
-                        example: www.orangetech.io
-                      type:
-                        type: string
-                        example: www.orangetech.io
-                      duration:
-                        type: string
-                        example: www.orangetech.io
-                      play_times:
-                        type: string
-                        example: www.orangetech.io
-                      publishedTime:
-                        type: string
-                        example: www.orangetech.io
-                      status:
-                        type: string
-                        example: www.orangetech.io
-                      reason:
-                        type: string
-                        example: www.orangetech.io
-                      link:
-                        type: string
-                        example: www.orangetech.io
-                      inkSocial:
-                        type: string
-                        example: www.orangetech.io
-                      userAvatarImage:
-                        type: string
-                        example: www.orangetech.io
-                      user_id:
-                        type: string
-                        example: www.orangetech.io
-                      fullUserName:
-                        type: string
-                        example: www.orangetech.io
-                      userName:
-                        type: string
-                        example: www.orangetech.io
-                      msisdn:
-                        type: string
-                        example: www.orangetech.io
-            2:
-              description: voi du lieu la channel
-              type: object
-              properties:
-                id:
-                  type: number
-                  example: 12
-                name:
-                  type: string
-                  example: www.orangetech.io
-                type:
-                  type: string
-                  example: www.orangetech.io
-                content:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      channel_id:
-                        type: number
-                        example: 12
-                      channel_name:
-                        type: string
-                        example: 12
-                      channel_name_mini:
-                        type: string
-                        example: 12
-                      avatarImage:
-                        type: string
-                        example: 12
-                      avatarImageH:
-                        type: string
-                        example: 12
-                      coverImage:
-                        type: string
-                        example: 12
-                      num_follow:
-                        type: string
-                        example: 12
-                      num_video:
-                        type: string
-                        example: 12
-                      description:
-                        type: string
-                        example: 12
-                      isFollow:
-                        type: string
-                        example: 12
+            id:
+              type: number
+            name:
+              type: string
+            type:
+              type: string
+            content:
+              type: array
+              items:
+                $ref: "#/definitions/schemaVideo"
+      data2:
+        type: array
+        description: search suggestion
+        items:
+          type: object
+          properties:
+            id:
+              type: number
+              example: 12
+            name:
+              type: string
+              example: www.orangetech.io
+            type:
+              type: string
+              example: www.orangetech.io
+            content:
+              type: array
+              items:
+                type: object
+                properties:
+                  channel_id:
+                    type: number
+                    example: 12
+                  channel_name:
+                    type: string
+                    example: 12
+                  channel_name_mini:
+                    type: string
+                    example: 12
+                  avatarImage:
+                    type: string
+                    example: 12
+                  avatarImageH:
+                    type: string
+                    example: 12
+                  coverImage:
+                    type: string
+                    example: 12
+                  num_follow:
+                    type: string
+                    example: 12
+                  num_video:
+                    type: string
+                    example: 12
+                  description:
+                    type: string
+                    example: 12
+                  isFollow:
+                    type: string
+                    example: 12
   defaultListPackage:
     type: object
     properties:
@@ -967,6 +1076,205 @@ definitions:
                   type: string
                   example: term-condition
 
+  defaultToggleLikeComment:
+    type: object
+    properties:
+      responseCode:
+        type: integer
+        format: int32
+      message:
+        type: string
+      data:
+        type: object
+        properties:
+          isLike:
+            example: 1
+  defaultGetKeyword:
+    type: object
+    properties:
+      responseCode:
+        type: integer
+        format: int32
+      message:
+        type: string
+      data:
+        type: object
+        properties:
+          content:
+            example: ["aaa","bbb"]
+  defaultPostComment:
+    type: object
+    properties:
+      responseCode:
+        type: integer
+        format: int32
+      message:
+        type: string
+      data:
+        type: object
+        properties:
+          id:
+            type: number
+            example: 1
+          type:
+            type: string
+            example: 1231ad asd
+          full_name:
+            type: string
+            example: 1231ad asd
+          user_id:
+            type: string
+            example: 1231ad asd
+          avatarImage:
+            type: string
+            example: 1231ad asd
+          comment:
+            type: string
+            example: 1231ad asd
+          like_count:
+            type: number
+            example: 12
+          parent_id:
+            type: number
+            example: 12
+          created_at:
+            type: string
+            example: 12
+          created_at_format:
+            type: string
+            example: 1231ad asd
+          is_like:
+            type: boolean
+            example: true
+  defaultFeedBack:
+    type: object
+    properties:
+      responseCode:
+        type: integer
+        format: int32
+      message:
+        type: string
+  defaultGetHomeWeb:
+    type: object
+    properties:
+      responseCode:
+        type: integer
+        format: int32
+      message:
+        type: string
+      banner:
+        type: array
+        items:
+          type: object
+          properties:
+            image:
+              type: string
+              example: 12chd73nsjuf
+            link:
+              type: string
+              example: 12chd73nsjuf
+            type:
+              type: string
+              example: 12chd73nsjuf
+            item_id:
+              type: string
+              example: 12chd73nsjuf
+      data:
+        $ref: "#/definitions/schemaVideoSerial"
+  schemaComment:
+    type: object
+    properties:
+      parentIds:
+        type: object
+        example: [1,2,3]
+      content:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: number
+              example: 1
+            parent_id:
+              type: number
+              example: 1
+            like_count:
+              type: number
+              example: 1
+            user_id:
+              type: number
+              example: 1
+            comment:
+              type: string
+              example: "xin cha0"
+            type:
+              type: string
+              example: "xin cha0"
+            created_at:
+              type: string
+              example: "xin cha0"
+            bucket:
+              type: string
+              example: "xin cha0"
+            path:
+              type: string
+              example: "xin cha0"
+            full_name:
+              type: string
+              example: "xin cha0"
+            msisdn:
+              type: string
+              example: "xin cha0"
+            channel_bucket:
+              type: string
+              example: "xin cha0"
+            channel_path:
+              type: string
+              example: "xin cha0"
+            avatarImage:
+              type: string
+              example: "xin cha0"
+            coverImage:
+              type: string
+              example: "xin cha0"
+            created_at_format:
+              type: string
+              example: "xin cha0"
+            is_like:
+              type: boolean
+              example: "xin cha0"
+            comment_count:
+              type: number
+              example: 1
+            children:
+              type: object
+              properties:
+                is_like:
+                  type: boolean
+                  example: true
+                full_name:
+                  type: string
+                  example: nguyen huy
+                avatarImage:
+                  type: string
+                  example: nguyen huy
+                coverImage:
+                  type: string
+                  example: nguyen huy
+                created_at_format:
+                  type: string
+                  example: nguyen huy
+
+  defaultGetListComment:
+    type: object
+    properties:
+      responseCode:
+        type: integer
+        format: int32
+      message:
+        type: string
+      data:
+        $ref: "#/definitions/schemaComment"
   defaultGetHome:
     type: object
     properties:
@@ -999,65 +1307,84 @@ definitions:
           content:
             type: array
             items:
-              type: object
-              properties:
-                id:
-                  type: number
-                  example: 12
-                name:
-                  type: string
-                  example: www.orangetech.io
-                fullName:
-                  type: string
-                  example: www.orangetech.io
-                description:
-                  type: string
-                  example: www.orangetech.io
-                coverImage:
-                  type: string
-                  example: www.orangetech.io
-                animationImage:
-                  type: string
-                  example: www.orangetech.io
-                type:
-                  type: string
-                  example: www.orangetech.io
-                duration:
-                  type: string
-                  example: www.orangetech.io
-                play_times:
-                  type: string
-                  example: www.orangetech.io
-                publishedTime:
-                  type: string
-                  example: www.orangetech.io
-                status:
-                  type: string
-                  example: www.orangetech.io
-                reason:
-                  type: string
-                  example: www.orangetech.io
-                link:
-                  type: string
-                  example: www.orangetech.io
-                inkSocial:
-                  type: string
-                  example: www.orangetech.io
-                userAvatarImage:
-                  type: string
-                  example: www.orangetech.io
-                user_id:
-                  type: string
-                  example: www.orangetech.io
-                fullUserName:
-                  type: string
-                  example: www.orangetech.io
-                userName:
-                  type: string
-                  example: www.orangetech.io
-                msisdn:
-                  type: string
-                  example: www.orangetech.io
+              $ref: "#/definitions/schemaVideo"
+
+  schemaVideoSerial:
+    type: object
+    properties:
+      id:
+        type: number
+        example: 12
+      name:
+        type: string
+        example: video 1
+      type:
+        type: string
+        example: VOD
+      content:
+        type: array
+        items:
+          $ref: "#/definitions/schemaVideo"
+  schemaVideo:
+    type: object
+    properties:
+      id:
+        type: number
+        example: 12
+      name:
+        type: string
+        example: www.orangetech.io
+      fullName:
+        type: string
+        example: www.orangetech.io
+      description:
+        type: string
+        example: www.orangetech.io
+      coverImage:
+        type: string
+        example: www.orangetech.io
+      animationImage:
+        type: string
+        example: www.orangetech.io
+      type:
+        type: string
+        example: www.orangetech.io
+      duration:
+        type: string
+        example: www.orangetech.io
+      play_times:
+        type: string
+        example: www.orangetech.io
+      publishedTime:
+        type: string
+        example: www.orangetech.io
+      status:
+        type: string
+        example: www.orangetech.io
+      reason:
+        type: string
+        example: www.orangetech.io
+      link:
+        type: string
+        example: www.orangetech.io
+      inkSocial:
+        type: string
+        example: www.orangetech.io
+      userAvatarImage:
+        type: string
+        example: www.orangetech.io
+      user_id:
+        type: string
+        example: www.orangetech.io
+      fullUserName:
+        type: string
+        example: www.orangetech.io
+      userName:
+        type: string
+        example: www.orangetech.io
+      msisdn:
+        type: string
+        example: www.orangetech.io
 externalDocs:
   description: Find out more about Orange Tech
   url: http://orangetech.io

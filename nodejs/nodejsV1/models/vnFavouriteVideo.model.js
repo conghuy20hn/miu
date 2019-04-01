@@ -74,3 +74,12 @@ updateItem = function(update, where){
 }
 
 exports.updateItem = updateItem;
+exports.checkIsFavourite = function (userId, video_id) {
+    return obj.findOne({
+        where: {
+            user_id: userId,
+            video_id: video_id,
+        }
+    });
+};
+

@@ -79,3 +79,23 @@ getChannelFollowQuery = function(userId, limit = 10, offset = 0){
     })
 }
 exports.getChannelFollowQuery = getChannelFollowQuery;
+
+exports.getFollow = function (userId, followId) {
+	return new Promise(function(resolve, reject){
+		VnUserFollow.findOne({
+			where:{
+				user_id: userId,
+				follow_id: followId,
+			}
+		}).then(function(users){
+			if(users != null){
+				resolve(users.dataValues);
+			}else{
+				resolve(false);
+			}
+		}).catch(function(err){
+			console.log(err);
+			resolve(false);
+		});
+	})
+}

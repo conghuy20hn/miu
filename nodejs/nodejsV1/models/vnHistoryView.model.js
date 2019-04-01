@@ -107,3 +107,20 @@ formatStr = function (str, value) {
     //     $items = $result;
     //     return array_reverse($items);
     // }
+
+exports.getByItemId = function (userId, msisdn, type, itemId) {
+    let result = {};
+    let key = self::generaKey(msisdn, userId, type, itemId);
+    let history = false; //self::getConnectCache($key);
+
+    if (history) {
+        let arr = history.split('_');
+        if (arr.length > 0) {
+            result = {
+                time: Utils.isset(arr[0]) ? (arr[0]) : 0,
+                duration: Utils.isset(arr[1]) ? (arr[1]) : 0
+            }
+        }
+    }
+    return result;
+}

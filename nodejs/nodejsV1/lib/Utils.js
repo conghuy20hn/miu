@@ -669,40 +669,8 @@ exports.array_slice = function (arr, offst, lgth, preserveKeys) { // eslint-disa
         return arr.slice(offst, lgth)
     }
 }
-exports.array_filter = function (arr, func) { // eslint-disable-line camelcase
-    //  discuss at: http://locutus.io/php/array_filter/
-    // original by: Brett Zamir (http://brett-zamir.me)
-    //    input by: max4ever
-    // improved by: Brett Zamir (http://brett-zamir.me)
-    //      note 1: Takes a function as an argument, not a function's name
-    //   example 1: var odd = function (num) {return (num & 1);}
-    //   example 1: array_filter({"a": 1, "b": 2, "c": 3, "d": 4, "e": 5}, odd)
-    //   returns 1: {"a": 1, "c": 3, "e": 5}
-    //   example 2: var even = function (num) {return (!(num & 1));}
-    //   example 2: array_filter([6, 7, 8, 9, 10, 11, 12], even)
-    //   returns 2: [ 6, , 8, , 10, , 12 ]
-    //   example 3: array_filter({"a": 1, "b": false, "c": -1, "d": 0, "e": null, "f":'', "g":undefined})
-    //   returns 3: {"a":1, "c":-1}
-
-    var retObj = {}
-    var k
-
-    func = func || function (v) {
-        return v
-    }
-
-    // @todo: Issue #73
-    if (Object.prototype.toString.call(arr) === '[object Array]') {
-        retObj = []
-    }
-
-    for (k in arr) {
-        if (func(arr[k])) {
-            retObj[k] = arr[k]
-        }
-    }
-
-    return retObj
+exports.array_filter = function (arr, func) {
+    return locutus.array_filter(arr, func);
 }
 exports.currentCacheTime = function () {
     let now = new Date();
@@ -715,60 +683,7 @@ exports.currentCacheTime = function () {
     return dateNow + cacheMinute + ":00";
 }
 exports.uasort = function (inputArr, sorter) {
-    //  discuss at: http://locutus.io/php/uasort/
-    // original by: Brett Zamir (http://brett-zamir.me)
-    // improved by: Brett Zamir (http://brett-zamir.me)
-    // improved by: Theriault (https://github.com/Theriault)
-    //      note 1: This function deviates from PHP in returning a copy of the array instead
-    //      note 1: of acting by reference and returning true; this was necessary because
-    //      note 1: IE does not allow deleting and re-adding of properties without caching
-    //      note 1: of property position; you can set the ini of "locutus.sortByReference" to true to
-    //      note 1: get the PHP behavior, but use this only if you are in an environment
-    //      note 1: such as Firefox extensions where for-in iteration order is fixed and true
-    //      note 1: property deletion is supported. Note that we intend to implement the PHP
-    //      note 1: behavior by default if IE ever does allow it; only gives shallow copy since
-    //      note 1: is by reference in PHP anyways
-    //   example 1: var $sorter = function (a, b) { if (a > b) {return 1;}if (a < b) {return -1;} return 0;}
-    //   example 1: var $fruits = {d: 'lemon', a: 'orange', b: 'banana', c: 'apple'}
-    //   example 1: uasort($fruits, $sorter)
-    //   example 1: var $result = $fruits
-    //   returns 1: {c: 'apple', b: 'banana', d: 'lemon', a: 'orange'}
-
-    var valArr = []
-    var k = ''
-    var i = 0
-    var sortByReference = false
-    var populateArr = {}
-
-    if (typeof sorter === 'string') {
-        sorter = this[sorter]
-    } else if (Object.prototype.toString.call(sorter) === '[object Array]') {
-        sorter = this[sorter[0]][sorter[1]]
-    }
-
-    var iniVal = (typeof require !== 'undefined' ? require('../info/ini_get')('locutus.sortByReference') : undefined) || 'on'
-    sortByReference = iniVal === 'on'
-    populateArr = sortByReference ? inputArr : populateArr
-
-    for (k in inputArr) {
-        // Get key and value arrays
-        if (inputArr.hasOwnProperty(k)) {
-            valArr.push([k, inputArr[k]])
-            if (sortByReference) {
-                delete inputArr[k]
-            }
-        }
-    }
-    valArr.sort(function (a, b) {
-        return sorter(a[1], b[1])
-    })
-
-    for (i = 0; i < valArr.length; i++) {
-        // Repopulate the old array
-        populateArr[valArr[i][0]] = valArr[i][1]
-    }
-
-    return sortByReference || populateArr
+    return locutus.uasort(inputArr, sorter);
 }
 exports.time = function () {
     return locutus.time();
@@ -870,4 +785,27 @@ exports.mergeById = function (array1, array2, key, limit = null) {
     } else {
         return result;
     }
+}
+exports.getCurrentCacheTime = function (partten) {
+    return new Date();
+}
+exports.dateSub = function (add, day) {
+
+    let today = this.getCurrentCacheTime();
+    let d = new Date(today);
+    let days = 0;
+    if (add) {
+        days = parseInt(d.getDate()) + parseInt(day);
+    } else {
+        days = parseInt(d.getDate()) - parseInt(day);
+    }
+    let date = new Date(d.setDate(days));
+    return date;
+}
+
+exports.time_elapsed_string = function (strDate) {
+    return strDate;
+}
+exports.dateDiff = function (strDate) {
+    return strDate;
 }

@@ -9,11 +9,8 @@ const VnVideoModel = require('../models/VnVideo.model');
 
 serialize = async function(id, query, cache = false, name = null,appId = 'app-api')
 {
-
     let contents = query;
-
     let result = [];
-
     if (!Utils.isEmpty(contents) && contents.length > 0) {
         for (let i = 0; i < contents.length; i++) {
             let content = contents[i];
@@ -31,7 +28,7 @@ serialize = async function(id, query, cache = false, name = null,appId = 'app-ap
                 videos = await VnVideoModel.getVideosByUser(false, objUser.id, Obj.video_folow_limit, 0);
             }
 
-            let tmpVideos;
+            let tmpVideos = [];
             if (videos) {
                 for (let j = 0; j < videos.length; j++) {
                     let video = videos[j];

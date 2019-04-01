@@ -1,8 +1,26 @@
 const Utils = require('./Utils');
 const vnHelper = require('./VnHelper');
 const validator = require('validator');
+const VnUserPlaylistItemBase = require('../models/VnUserPlaylistItem.model');
 const Obj = require('./Obj');
-serialize = function (id, contents, cache = false, name = null) {
+serialize = async function (id, query, cache = false, name = null, appId = 'app-api') {
+    let key = md5(id + "_" + appId + "_" + JSON.stringify(query));
+    let contents = [];
+    if (params.configStr.cache_enabled == true && cache == true) {
+        contents = await redisService.getKey(key, dbredis.constant.dbCache);
+        if (Utils.isEmpty(contents)) {
+            contents = await VnUserPlaylistItemBase.getPlaylistFindAllQuery(query);
+
+
+            redisService.setKey(key, JSON.stringify(contents), redis.CACHE_10MINUTE, redis.dbCache);
+        } else {
+            contents = JSON.parse(contents);
+
+        }
+    } else {
+        contents = await VnUserPlaylistItemBase.getPlaylistFindAllQuery(query);
+    }
+
     let items = [];
     if (!Utils.isEmpty(contents) && contents.length > 0) {
         for (let i = 0; i < contents.length; i++) {

@@ -55,6 +55,7 @@ configStr.videoHotRandomlimit = 8;
 configStr.appHomeHotchannellimit = 8;
 
 configStr.slideshowHomeLimit = 12;
+configStr.categoryLoadMoreLimit=12;
 //huync2
 configStr.errAuth = "Bạn chưa đăng nhập.";
 configStr.quota_free_n_day = 2;
@@ -100,6 +101,9 @@ configStr.VnFavouriteVideoBase_STATUS_LIKE = 1;
 configStr.recommendation_enable = 1;
 configStr.RecommendationService_BOX_RELATED = 1;
 configStr.max_related_video = 1;
+configStr.streaming_vodProfileId = 6;
+configStr.app_googleadwords_relate_limit = 30;
+configStr.app_video_relate_limit = 15;
 let randomAvatarChannel = [
     { "bucket": "image1", "path": "banner_random/avatarfd01.jpg" },
     { "bucket": "image2", "path": "banner_random/avatarfd02.jpg" }

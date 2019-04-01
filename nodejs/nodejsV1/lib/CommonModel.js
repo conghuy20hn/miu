@@ -5,9 +5,8 @@ const Utils = require('../lib/Utils');
 exports.getInfoUpdate = async function (osType, osVersionCode) {
     let isForceUpdateAPP = 0;
     let isUpdateAPP = 0;
-
     if (!Utils.isEmpty(osType) && !Utils.isEmpty(osVersionCode)) {
-        let arrForceUpdateAPP = await VnConfigBase.getConfigKey("FORCE_UPDATE_APP_" + osType.toUpperCase(), 0);
+        let arrForceUpdateAPP = await VnConfigBase.getConfigKey("FORCE_UPDATE_APP_" + osType.toUpperCase(), "0");
         isForceUpdateAPP = (Utils.in_array(osVersionCode, arrForceUpdateAPP.split(","))) ? 1 : 0;
 
         isUpdateAPP = (Utils.version_compare(await VnConfigBase.getConfigKey("VERSION_APP_" + osType.toUpperCase(), 0), osVersionCode) > 0) ? 1 : 0;

@@ -21,6 +21,7 @@ const VnUserFollowBase = require('../models/VnUserFollow.model');
 const VnUserPlaylistItemBase = require('../models/VnUserPlaylistItem.model');
 const VnVideoSearchBase = require('../models/VnVideoSearch.model');
 const VnUserSearchBase = require('../models/VnUserSearch.model');
+const VnGroupCategoryBase = require('../models/VnGroupCategory.model');
 // const VnHistoryViewBase = require('../models/VnHistoryView.model');
 const VnVideoHotBase = require('../models/VnVideoHot.model');
 const Common = require('../lib/CommonModel');
@@ -53,10 +54,10 @@ exports.getHome = async function (req, res) {
         dataResponse.push(categoryBox);
     }
     //Lay danh sach video moi
-    let ids = await VnVideoBase.getVideoHomePage(limitN, true);
+    let ids = await VnVideoBase.getVideosFindAllQuery(await VnVideoBase.getVideoHomePage(limitN, true), "getVideosFindAllQuery");
     // //home_video_v2
     videoBox = await VideoObj.serialize(
-        obj.HOME_VIDEO_V2, await VnVideoBase.getAllVideo(ids), true, false, obj.NEWSFEED, appId
+        obj.HOME_VIDEO_V2, await VnVideoBase.getAllVideo(Utils.arrayColumn(ids, "id")), true, false, obj.NEWSFEED, appId
     );
 
     if (Utils.isset(videoBox.content) && videoBox.content) {
@@ -587,20 +588,20 @@ exports.getMoreContent = async function (req, res) {
 
                 //home_video_v2
                 contents = await VideoObj.serialize(
-                    obj.VIDEO_HOT, VnVideoBase.getVideoHomePage(limitN, true), true, obj.getMessage(obj.NEWSFEED), obj.NEWSFEED
+                    obj.VIDEO_HOT, await VnVideoBase.getVideoHomePage(limitN, true), true, obj.getMessage(obj.NEWSFEED), obj.NEWSFEED
                 );
 
             } else {
                 let idsPage1 = Utils.isEmpty(redisService.getKey("VIDEO_HOMEPAGE_IDS", redis.dbCache)) ? [] : redisService.getKey("VIDEO_HOMEPAGE_IDS", redis.dbCache).split(",");
                 contents = await VideoObj.serialize(
-                    obj.VIDEO_HOT, VnVideoBase.getHotVideoWithOutIds(idsPage1, limit, offset), true
+                    obj.VIDEO_HOT, await VnVideoBase.getHotVideoWithOutIds(idsPage1, limit, offset), true
                 );
             }
             break;
         case obj.VIDEO_HOT.toLowerCase():
             let idsPage1 = Utils.isEmpty(redisService.getKey("VIDEO_HOMEPAGE_IDS", redis.dbCache)) ? [] : redisService.getKey("VIDEO_HOMEPAGE_IDS", redis.dbCache).split(",");
             contents = await VideoObj.serialize(
-                obj.VIDEO_HOT, VnVideoBase.getHotVideoWithOutIds(idsPage1, limit, offset), true
+                obj.VIDEO_HOT, await VnVideoBase.getHotVideoWithOutIds(idsPage1, limit, offset), true
             );
             // let ids = await VnVideoBase.getVideoHomePage(configStr.videoLimitNboxHome, true);
             // // //home_video_v2
@@ -714,34 +715,109 @@ exports.getMoreContent = async function (req, res) {
             } else if (Utils.strpos(id.toLowerCase(), obj.VIDEO_NEW_OF_CHANNEL) === 0) {
 
             } else if (Utils.strpos(id.toLowerCase(), obj.VIDEO_NEWEST_CHANNEL) === 0) {
+                let itemId = Utils.str_replace(obj.VIDEO_NEWEST_CHANNEL, '', id);
+                let user = VnUserBase.getActiveUserById(itemId);
+                if (Utils.isEmpty(user)) {
+                    return "INVALID";
+                }
+                contents = VideoObj.serialize(
+                    id, VnVideoBase.getVideosByChannel(itemId, limit, offset, 'NEW'), false, user.full_name
+                );
 
             } else if (Utils.strpos(id.toLowerCase(), obj.PLAYLIST_PUBLIC_OF_USER) === 0) {
-                let userId = Utils.str_replace(obj.PLAYLIST_PUBLIC_OF_USER, '', $id);
+                let userId = Utils.str_replace(obj.PLAYLIST_PUBLIC_OF_USER, '', id);
                 let isForSmartTv = req.query.is_for_smart_tv.trim();
 
                 if (isForSmartTv) {
-                    contents = UserPlaylistVideoObj.serialize(
-                        id, VnUserPlaylistItemBase.getPlaylistByUserQuery(userId, limit, offset), true, false
+                    contents = await UserPlaylistVideoObj.serialize(
+                        id, await VnUserPlaylistItemBase.getPlaylistByUserQuery(userId, limit, offset), true, false
                     );
                 } else {
-                    contents = UserPlaylistObj.serialize(
-                        $id, VnUserPlaylistItemBase.getPlaylistByUserQuery(userId, limit, offset), true, false
+                    contents = await UserPlaylistObj.serialize(
+                        id, await VnUserPlaylistItemBase.getPlaylistByUserQuery(userId, limit, offset), true, false
                     );
                 }
             } else if (Utils.strpos(id.toLowerCase(), obj.CATEGORY_CHILD) === 0) {
+                let id = Utils.str_replace(obj.CATEGORY_CHILD + "_", '', id);
+
+                let categorys = CategoryObj.serialize(
+                    obj.CATEGORY_PARENT, await VnGroupCategoryBase.getChilds(id, offset, limit), true
+                );
+                let tmpContent = [];
+                let loop = configStr.categoryLoadMoreLimit;
+                if (categorys.content.length > 0) {
+                    for (let index = 0; index < categorys.content.length; index++) {
+                        const element = categorys.content[index];
+                        id = element.id;
+                        name = element.name;
+                        let tmpBox = await VideoObj.serialize(
+                            obj.CATEGORY_CHILD + '_' + id, VnVideoBase.getVideoByCategory(id, null, 0, loop), false, name
+                        );
+                        tmpContent.push(tmpBox);
+                    }
+
+                }
+                contents.content = tmpContent;
 
             } else if (Utils.strpos(id.toLowerCase(), obj.CATEGORY_CHILD_VIDEO) === 0) {
 
-            } else if (Utils.strpos(id.toLowerCase(), obj.VIDEO_MOST_TRENDING_CATE) === 0) {
+                let contentId = Utils.str_replace(obj.CATEGORY_CHILD_VIDEO + "_", '', id);
+                // lay video theo chuyen muc
+                let group = await VnGroupCategoryBase.getCategoryGroup(contentId);
+                if (group.length == 0) {
+                    return "INVALID";
+                }
 
+                let name = group.name;
+                contents = await VideoObj.serialize(
+                    id, await VnVideoBase.getVideoByCategory(contentId, null, 0, limit), false, name);
+
+            } else if (Utils.strpos(id.toLowerCase(), obj.VIDEO_MOST_TRENDING_CATE) === 0) {
+                let itemId = Utils.str_replace(obj.VIDEO_MOST_TRENDING_CATE + "_", '', id);
+                contents = await VideoObj.serialize(
+                    id, await VnVideoBase.getVideosByCate(itemId, limit, offset, 'MOSTTRENDING'), false, obj.getName(obj.VIDEO_MOST_TRENDING_CATE)
+                );
             } else if (Utils.strpos(id.toLowerCase(), obj.VIDEO_MOST_VIEW_CATE) === 0) {
+
+                let itemId = Utils.str_replace(obj.VIDEO_MOST_VIEW_CATE + "_", '', id);
+                contents = await VideoObj.serialize(
+                    id, await VnVideoBase.getVideosByCate(itemId, limit, offset, 'MOSTVIEW'), false, obj.getName(obj.VIDEO_MOST_VIEW_CATE)
+                );
 
             } else if (Utils.strpos(id.toLowerCase(), obj.VIDEO_NEW_CATE) === 0) {
                 let itemId = Utils.str_replace(obj.VIDEO_NEW_CATE + "_", '', id);
-                console.log(itemId);
-
-
+                contents = await VideoObj.serialize(
+                    id, await VnVideoBase.getVideosByCate(itemId, limit, offset, 'NEW'), false, obj.getName(obj.VIDEO_NEW_CATE)
+                );
             } else if (Utils.strpos(id.toLowerCase(), obj.VIDEO_OF_CATEGORY) === 0) {
+                let itemId = Utils.str_replace(obj.VIDEO_OF_CATEGORY + "_", '', id);
+                if (!validator.isNumeric(itemId)) {
+                    return "INVALID";
+                }
+                let objCategory = await VnGroupCategoryBase.getActiveById(itemId);
+                let childOfCategory = redisService.getKey("CATEGORY_CHILD_" + itemId, redis.dbCache);
+                if (Utils.isEmpty(childOfCategory)) {
+
+                    let childs = await VnGroupCategoryBase.getChilds(itemId);
+                    if (!Utils.isEmpty(childs)) {
+                        childs.forEach(element => {
+                            childOfCategory.push(element.id);
+                        });
+                        let value = Utils.implode(",", childOfCategory);
+                        redisService.setKey("CATEGORY_CHILD_" + itemId, value, redis.CACHE_1HOUR, redis.cache);
+                    }
+                } else {
+                    childOfCategory = Utils.explode(",", childOfCategory);
+                }
+                if (!Utils.isEmpty(childOfCategory)) {
+                    contents = await VideoObj.serialize(
+                        id, await VnVideoBase.getVideosByCate(childOfCategory.push(itemId), limit, offset, 'NEW', false), true, Utils.truncateWords(objCategory.name, 27)
+                    );
+                } else {
+                    contents = await VideoObj.serialize(
+                        id, await VnVideoBase.getVideosByCate(itemId, limit, offset, 'NEW', false), true, Utils.truncateWords(objCategory.name, 27)
+                    );
+                }
 
             }
 
