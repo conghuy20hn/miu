@@ -17,9 +17,9 @@ getFollowUser = function(userId, limit = 10, offset = 0){
 	return new Promise(function(resolve, reject){
 		let where = {};
 		VnUserFollow.findAll({
-    		where: {
-				user_id: userId
-    		},
+			where: {
+				user_id: parseInt(userId)
+			},
 			attributes: ['follow_id'],
     		include:{
     			model: VnUser, as: 'u',
@@ -44,39 +44,35 @@ getFollowUser = function(userId, limit = 10, offset = 0){
     })
 }
 exports.getFollowUser = getFollowUser;
-getChannelFollowQuery = function(userId, limit = 10, offset = 0){
+getChannelFollowQuery = function (userId, limit = 10, offset = 0) {
 
-	return new Promise(function(resolve, reject){
-		let where = {};
-		VnUserFollow.findAll({
-    		where: {
-				user_id: userId
-    		},
-			attributes: ['follow_id',['1','is_follow']],
-    		include:{
-    			model: VnUser, as: 'u',
-    			where: {
-					status: 1
-    			},
-           		required:false,
-				attributes: ['u.*'],
+	let query = {
+		where: {
+			user_id: userId
+		},
+		attributes: ['follow_id',
+			[Sequelize.literal(1), 'is_follow'],
+			[Sequelize.col('u.full_name'), 'full_name'],
+			[Sequelize.col('u.bucket'), 'bucket'],
+			[Sequelize.col('u.path'), 'path'],
+			[Sequelize.col('u.msisdn'), 'msisdn'],
+			[Sequelize.col('u.id'), 'id'],  // alias on includes
+		],
+		include: {
+			model: VnUser, as: 'u',
+			where: {
+				status: 1
 			},
-			order: [
-                ['id', 'DESC'],
-            ],
-    		limit: limit,
-    		offset: offset
-    	}).then(function(users){
-			if(users.length>0){
-				resolve(users);
-			}else{
-				resolve({});
-			}
-    	}).catch(function(err){
-    		console.log(err);
-            resolve(false);
-        });
-    })
+			required: true,
+			attributes: [],
+		},
+		order: [
+			['id', 'DESC'],
+		],
+		limit: limit,
+		offset: offset
+	}
+	return query;
 }
 exports.getChannelFollowQuery = getChannelFollowQuery;
 
@@ -96,6 +92,21 @@ exports.getFollow = function (userId, followId) {
 		}).catch(function(err){
 			console.log(err);
 			resolve(false);
+		});
+	})
+}
+exports.getFindAllQuery = function (query, func = "getFindAllQuery") {
+	return new Promise(function (resolve, reject) {
+		query.raw = true;
+		VnUserFollow.findAll(query).then(function (users) {
+			if (users.length > 0) {
+				resolve(users);
+			} else {
+				resolve({});
+			}
+		}).catch(function (err) {
+			console.log(func, err);
+			resolve({});
 		});
 	})
 }

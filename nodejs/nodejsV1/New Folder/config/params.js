@@ -101,11 +101,6 @@ configStr.VnFavouriteVideoBase_STATUS_LIKE = 1;
 configStr.recommendation_enable = 1;
 configStr.RecommendationService_BOX_RELATED = 1;
 configStr.max_related_video = 1;
-configStr.streaming_vodProfileId = 6;
-configStr.app_googleadwords_relate_limit = 30;
-configStr.app_video_relate_limit = 15;
-configStr.app_search_page_limit = 15;
-configStr.alias_prefix = 15;
 let randomAvatarChannel = [
     { "bucket": "image1", "path": "banner_random/avatarfd01.jpg" },
     { "bucket": "image2", "path": "banner_random/avatarfd02.jpg" }

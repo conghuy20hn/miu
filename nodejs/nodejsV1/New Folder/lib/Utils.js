@@ -130,7 +130,7 @@ exports.hideMsisdn = function (msisdn) {
 exports.wordwrap = function (str, intWidth, strBreak, cut) {
     return locutus.wordwrap(str, intWidth, strBreak, cut);
 }
-exports.strpos = function (haystack, needle, offset=0) {
+exports.strpos = function (haystack, needle, offset) {
 
     return locutus.strpos(haystack, needle, offset);
 }
@@ -801,11 +801,4 @@ exports.dateSub = function (add, day) {
     }
     let date = new Date(d.setDate(days));
     return date;
-}
-
-exports.time_elapsed_string = function (strDate) {
-    return strDate;
-}
-exports.dateDiff = function (strDate) {
-    return strDate;
 }
